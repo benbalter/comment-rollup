@@ -5,7 +5,4 @@ RUN bundle install
 
 COPY rollup.rb /rollup.rb
 
-RUN pwd
-RUN ls
-
 ENTRYPOINT ["/rollup.rb"]

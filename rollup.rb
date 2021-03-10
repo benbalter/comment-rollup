@@ -14,8 +14,12 @@ client = Octokit::Client.new(access_token: ENV['GITHUB_TOKEN'])
 client.auto_paginate = true
 
 issue = client.issue(repo, issue_number)
+labels = issue.labels.map(&:name)
 
-puts issue.labels.inspect
+unless labels.include?(label)
+  puts "Issue `#{issue.title}` does not have label `#{label}`. Skipping."
+  exit
+end
 
 output = issue.rels[:comments].get.data.map(&:body).join("\n\n")
 rollup = "<details><summary>#{summary}</summary>\n\n#{output}\n\n</details>"
