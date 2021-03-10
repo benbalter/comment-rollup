@@ -11,7 +11,7 @@ Why would you ever want to do this? For ease of copying all the comments, either
 
 ## Example usage
 
-```yyml
+```yaml
 on: issue_comment
 
 jobs:
