@@ -1,0 +1,12 @@
+name: Comment rollup
+description: Rolls up status updates into a single comment for ease of copying
+inputs:
+  label:
+    description: Label of issues to rollup
+    required: false
+    default: "Weekly Update Notes"
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+    - ${{ inputs.label }}
