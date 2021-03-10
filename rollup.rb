@@ -21,7 +21,8 @@ unless labels.include?(label)
   exit
 end
 
-output = issue.rels[:comments].get.data.map(&:body).join("\n\n")
+comments = issue.rels[:comments].get.data
+output = comments.map(&:body).join("\n\n")
 rollup = "<details><summary>#{summary}</summary>\n\n#{output}\n\n</details>"
 
 body = if ROLLUP_REGEX.match?(issue.body)
@@ -31,3 +32,5 @@ body = if ROLLUP_REGEX.match?(issue.body)
        end
 
 client.update_issue(repo, issue.number, body: body)
+
+puts "Rolled up #{comments.count} comments."
