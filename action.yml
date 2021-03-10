@@ -5,9 +5,12 @@ inputs:
     description: Label of issues to rollup
     required: false
     default: "Weekly Update Notes"
+  issue_number:
+    description: Issue to rollup
+    required: true
 runs:
   using: 'docker'
   image: 'Dockerfile'
   args:
-    - ${{ github.event.issue.number }}
+    - ${{ inputs.issue_number }}
     - ${{ inputs.label }}
