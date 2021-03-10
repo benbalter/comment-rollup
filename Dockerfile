@@ -1,6 +1,6 @@
 FROM ruby:2.7
 
-COPY Gemfile Gemfile.lock ./
+COPY Gemfile ./
 RUN bundle install
 
 COPY entrypoint.sh rollup.rb ./
