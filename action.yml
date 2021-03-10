@@ -9,4 +9,5 @@ runs:
   using: 'docker'
   image: 'Dockerfile'
   args:
+    - ${{ github.event.issue.number }}
     - ${{ inputs.label }}

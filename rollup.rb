@@ -4,7 +4,8 @@ require 'octokit'
 require 'dotenv/load'
 
 repo = ENV['GITHUB_REPOSITORY']
-label = ARGV[0] || 'Weekly Update Notes'
+issue_num = ARGV[0]
+label = ARGV[1] || 'Weekly Update Notes'
 summary = 'Comment rollup'
 ROLLUP_REGEX = %r{<details>\s*<summary>\s*#{summary}\s*</summary>.*?</details>}i.freeze
 

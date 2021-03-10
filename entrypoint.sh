@@ -1,3 +1,5 @@
 #!/bin/sh
 
-bundle exec ruby ./rollup.rb
+ls
+pwd
+bundle exec ruby rollup.rb
