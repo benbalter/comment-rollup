@@ -5,4 +5,4 @@ RUN bundle install
 
 COPY entrypoint.sh rollup.rb ./
 
-ENTRYPOINT ["bundle", "exec", "ruby", "rollup.rb"]
+ENTRYPOINT ["bundle", "exec", "./rollup.rb"]
