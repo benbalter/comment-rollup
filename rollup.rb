@@ -4,7 +4,7 @@ require 'octokit'
 require 'dotenv/load'
 
 repo = ENV['GITHUB_REPOSITORY']
-issue_num = ARGV[0]
+issue_number = ARGV[0]
 label = ARGV[1] || 'Weekly Update Notes'
 summary = 'Comment rollup'
 ROLLUP_REGEX = %r{<details>\s*<summary>\s*#{summary}\s*</summary>.*?</details>}i.freeze
@@ -12,8 +12,10 @@ ROLLUP_REGEX = %r{<details>\s*<summary>\s*#{summary}\s*</summary>.*?</details>}i
 client = Octokit::Client.new(access_token: ENV['GITHUB_TOKEN'])
 client.auto_paginate = true
 
-options = { state: 'open', labels: label, sort: 'updated', direction: 'desc' }
-issue = client.list_issues(repo, options).first
+issue = client.issue(repo, issue_number)
+
+puts issue.labels.inspect
+
 output = issue.rels[:comments].get.data.map(&:body).join("\n\n")
 rollup = "<details><summary>#{summary}</summary>\n\n#{output}\n\n</details>"
 
