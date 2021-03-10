@@ -3,6 +3,6 @@ FROM ruby:2.7
 COPY Gemfile ./
 RUN bundle install
 
-COPY entrypoint.sh rollup.rb ./
+COPY rollup.rb ./
 
-ENTRYPOINT ["bundle", "exec", "./rollup.rb"]
+ENTRYPOINT ["./rollup.rb"]
