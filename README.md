@@ -20,7 +20,7 @@ jobs:
     name: Comment rollup
     steps:
     - name: Rollup comments
-      uses: benbalter/comment-rollup@main
+      uses: benbalter/comment-rollup@v1
       with:
         label: 'Weekly Update Notes'
         issue_number: ${{ github.event.issue.number }} # Needed to know what issue was updated
