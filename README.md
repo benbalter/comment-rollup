@@ -12,7 +12,9 @@ Why would you ever want to do this? For ease of copying all the comments, either
 ## Example usage
 
 ```yaml
-on: issue_comment
+on: issue_comment]
+
+name: Rollup weekly comments
 
 jobs:
   comment_rollup:
