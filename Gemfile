@@ -6,6 +6,9 @@ gem 'dotenv'
 gem 'octokit'
 
 group :development do
+  gem 'rspec'
   gem 'rubocop'
   gem 'rubocop-performance'
+  gem 'rubocop-rspec'
+  gem 'webmock'
 end
