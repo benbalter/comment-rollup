@@ -2,5 +2,6 @@
 
 set -e
 
+bundle exec rspec
 bundle exec rubocop
 yamllint ./*.yml
