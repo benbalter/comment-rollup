@@ -11,7 +11,7 @@ RSpec.describe 'CommentRollup' do
     issue_stub = stub_request(:get, 'https://api.github.com/repos/test/test/issues/1')
                  .to_return(status: 200, body: issue, headers: { 'Content-Type' => 'application/json' })
 
-    comments = [{ body: 'foo' }, body: 'bar'].to_json
+    comments = [{ body: 'foo' }, { body: 'bar' }].to_json
     comments_stub = stub_request(:get, 'https://api.github.com/repos/test/test/issues/1/comments')
                     .to_return(status: 200, body: comments, headers: { 'Content-Type' => 'application/json' })
 
