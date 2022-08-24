@@ -1,4 +1,4 @@
-FROM ruby:3.0
+FROM ruby:3.1.2
 
 COPY Gemfile ./
 RUN bundle install
