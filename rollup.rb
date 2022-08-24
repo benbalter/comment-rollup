@@ -4,13 +4,13 @@
 require 'octokit'
 require 'dotenv/load'
 
-repo = ENV['GITHUB_REPOSITORY']
+repo = ENV.fetch('GITHUB_REPOSITORY', nil)
 issue_number = ARGV[0]
 label = ARGV[1].strip || 'Weekly Update Notes'
 summary = 'Comment rollup'
-ROLLUP_REGEX = %r{<details>\s*<summary>\s*#{summary}\s*</summary>.*?</details>}im.freeze
+ROLLUP_REGEX = %r{<details>\s*<summary>\s*#{summary}\s*</summary>.*?</details>}im
 
-client = Octokit::Client.new(access_token: ENV['GITHUB_TOKEN'])
+client = Octokit::Client.new(access_token: ENV.fetch('GITHUB_TOKEN', nil))
 client.auto_paginate = true
 
 issue = client.issue(repo, issue_number)
