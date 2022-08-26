@@ -1,9 +1,9 @@
 import github from "@actions/github";
 import {
   getInput,
-  setOutput,
   info,
   warning,
+  setOutput,
   notice,
   setFailed,
 } from "@actions/core";
@@ -79,7 +79,7 @@ async function run(): Promise<void> {
   }
 
   const body = issueBody(issue, comments);
-  setOutput("body", "body");
+  setOutput("body", body);
   octokit.rest.issues.update({ ...octokitArgs, body });
   notice(`Rolled up ${comments.length} comments to issue ${issue.title}`);
 }
