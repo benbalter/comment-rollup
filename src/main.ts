@@ -1,4 +1,4 @@
-import github from "@actions/github";
+import { context as github_context, getOctokit } from "@actions/github";
 import {
   getInput,
   info,
@@ -55,8 +55,8 @@ async function run(): Promise<void> {
     10
   );
 
-  const context = github.context;
-  const octokit = github.getOctokit(token);
+  const context = github_context;
+  const octokit = getOctokit(token);
   const octokitArgs = {
     ...context.repo,
     issue_number: issueNumber,

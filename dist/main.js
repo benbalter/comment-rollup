@@ -31,13 +31,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.run = exports.issueBody = exports.hasLabel = void 0;
-const github_1 = __importDefault(require("@actions/github"));
-const core = __importStar(require("@actions/core"));
+const github = __importStar(require("@actions/github"));
+const core_1 = require("@actions/core");
 require("dotenv/config");
 const summary = "Comment rollup";
 function hasLabel(labels, label) {
@@ -68,26 +65,26 @@ function issueBody(issue, comments) {
 exports.issueBody = issueBody;
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
-        const token = core.getInput("token", { required: true });
-        const label = core.getInput("label");
-        const issueNumber = parseInt(core.getInput("issue_number", { required: true }), 10);
-        const context = github_1.default.context;
-        const octokit = github_1.default.getOctokit(token);
+        const token = (0, core_1.getInput)("token", { required: true });
+        const label = (0, core_1.getInput)("label");
+        const issueNumber = parseInt((0, core_1.getInput)("issue_number", { required: true }), 10);
+        const context = github.context;
+        const octokit = github.getOctokit(token);
         const octokitArgs = Object.assign(Object.assign({}, context.repo), { issue_number: issueNumber });
         const { data: issue } = yield octokit.rest.issues.get(octokitArgs);
         if (label && !hasLabel(issue.labels, label)) {
-            core.info(`Issue ${issue.title} does not have label ${label}. Skipping.`);
+            (0, core_1.info)(`Issue ${issue.title} does not have label ${label}. Skipping.`);
             return;
         }
         const { data: comments } = yield octokit.rest.issues.listComments(octokitArgs);
         if (comments.length === 0) {
-            core.warning(`Issue ${issue.title} does not have any comments. Skipping.`);
+            (0, core_1.warning)(`Issue ${issue.title} does not have any comments. Skipping.`);
             return;
         }
         const body = issueBody(issue, comments);
-        core.setOutput("body", body);
+        (0, core_1.setOutput)("body", body);
         octokit.rest.issues.update(Object.assign(Object.assign({}, octokitArgs), { body }));
-        core.notice(`Rolled up ${comments.length} comments to issue ${issue.title}`);
+        (0, core_1.notice)(`Rolled up ${comments.length} comments to issue ${issue.title}`);
     });
 }
 exports.run = run;
@@ -96,5 +93,5 @@ try {
 }
 catch (error) {
     if (error instanceof Error)
-        core.setFailed(error.message);
+        (0, core_1.setFailed)(error.message);
 }
