@@ -73,7 +73,7 @@ function run() {
             return;
         }
         const body = issueBody(issue, comments);
-        (0, core_1.setOutput)('body', 'body');
+        (0, core_1.setOutput)("body", "body");
         octokit.rest.issues.update(Object.assign(Object.assign({}, octokitArgs), { body }));
         (0, core_1.notice)(`Rolled up ${comments.length} comments to issue ${issue.title}`);
     });
