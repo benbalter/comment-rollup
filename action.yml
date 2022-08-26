@@ -10,7 +10,6 @@ inputs:
   token:
     description: Github token
     required: true
-    default: ${{ secrets.GITHUB_TOKEN }}
 outputs:
   rollup:
     description: The rolled up comment summary as Markdown
