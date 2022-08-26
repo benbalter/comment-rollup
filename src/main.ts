@@ -1,9 +1,9 @@
-import github from "@actions/github";
+import { context as github_context, getOctokit } from "@actions/github";
 import {
   getInput,
-  setOutput,
   info,
   warning,
+  setOutput,
   notice,
   setFailed,
 } from "@actions/core";
@@ -55,11 +55,10 @@ async function run(): Promise<void> {
     10
   );
 
-  const { context } = github;
-  const octokit = github.getOctokit(token);
+  const context = github_context;
+  const octokit = getOctokit(token);
   const octokitArgs = {
-    owner: context.repo.owner,
-    repo: context.repo.repo,
+    ...context.repo,
     issue_number: issueNumber,
   };
 
@@ -80,7 +79,7 @@ async function run(): Promise<void> {
   }
 
   const body = issueBody(issue, comments);
-  setOutput("body", "body");
+  setOutput("body", body);
   octokit.rest.issues.update({ ...octokitArgs, body });
   notice(`Rolled up ${comments.length} comments to issue ${issue.title}`);
 }
