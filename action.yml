@@ -7,6 +7,10 @@ inputs:
   issue_number:
     description: Issue to rollup
     required: true
+  token:
+    description: Github token
+    required: true
+    default: ${{ secrets.GITHUB_TOKEN }}
 outputs:
   rollup:
     description: The rolled up comment summary as Markdown
