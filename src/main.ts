@@ -1,5 +1,12 @@
 import github from "@actions/github";
-import { getInput, info, warning, notice, setFailed } from "@actions/core";
+import {
+  getInput,
+  setOutput,
+  info,
+  warning,
+  notice,
+  setFailed,
+} from "@actions/core";
 import "dotenv/config";
 
 const summary = "Comment rollup";
@@ -73,6 +80,7 @@ async function run(): Promise<void> {
   }
 
   const body = issueBody(issue, comments);
+  setOutput("body", "body");
   octokit.rest.issues.update({ ...octokitArgs, body });
   notice(`Rolled up ${comments.length} comments to issue ${issue.title}`);
 }
