@@ -4,13 +4,12 @@ inputs:
   label:
     description: Label of issues to rollup
     required: false
-    default: "Weekly Update Notes"
   issue_number:
     description: Issue to rollup
     required: true
+outputs:
+  rollup:
+    description: The rolled up comment summary as Markdown
 runs:
-  using: 'docker'
-  image: 'Dockerfile'
-  args:
-    - ${{ inputs.issue_number }}
-    - ${{ inputs.label }}
+  using: 'node16'
+  main: 'index.js'
