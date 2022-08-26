@@ -7,7 +7,7 @@
     "build": "tsc",
     "format": "prettier --write '**/*.ts'",
     "format-check": "prettier --check '**/*.ts'",
-    "lint": "eslint src/**/*.ts",
+    "lint": "eslint src/**/*.ts --fix",
     "package": "ncc build --source-map --license licenses.txt",
     "test": "jest",
     "all": "npm run build && npm run format && npm run lint && npm run package && npm test"
@@ -39,6 +39,6 @@
     "js-yaml": "^4.1.0",
     "prettier": "2.7.1",
     "ts-jest": "^28.0.0",
-    "typescript": "^4.8.2"
+    "typescript": ">=3.3.1, <4.8.0"
   }
 }

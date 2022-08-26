@@ -7,6 +7,10 @@
     "sourceType": "module",
     "project": "./tsconfig.json"
   },
+  "rules": {
+    "i18n-text/no-en": "off",
+    "camelcase": "warn"
+  },
   "env": {
     "node": true,
     "es6": true,
