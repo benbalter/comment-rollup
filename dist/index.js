@@ -57,11 +57,7 @@ function run() {
         const issueNumber = parseInt((0, core_1.getInput)("issue_number", { required: true }), 10);
         const context = github_1.default.context;
         const octokit = github_1.default.getOctokit(token);
-        const octokitArgs = {
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            issue_number: issueNumber,
-        };
+        const octokitArgs = Object.assign(Object.assign({}, context.repo), { issue_number: issueNumber });
         const { data: issue } = yield octokit.rest.issues.get(octokitArgs);
         if (label && !hasLabel(issue.labels, label)) {
             (0, core_1.info)(`Issue ${issue.title} does not have label ${label}. Skipping.`);
