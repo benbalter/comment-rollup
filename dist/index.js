@@ -55,7 +55,7 @@ function run() {
         const token = (0, core_1.getInput)("token", { required: true });
         const label = (0, core_1.getInput)("label");
         const issueNumber = parseInt((0, core_1.getInput)("issue_number", { required: true }), 10);
-        const { context } = github_1.default;
+        const context = github_1.default.context;
         const octokit = github_1.default.getOctokit(token);
         const octokitArgs = {
             owner: context.repo.owner,

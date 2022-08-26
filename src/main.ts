@@ -55,7 +55,7 @@ async function run(): Promise<void> {
     10
   );
 
-  const { context } = github;
+  const context = github.context;
   const octokit = github.getOctokit(token);
   const octokitArgs = {
     owner: context.repo.owner,
