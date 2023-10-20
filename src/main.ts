@@ -1,41 +1,23 @@
-import { context as github_context, getOctokit } from "@actions/github";
-import {
-  getInput,
-  info,
-  warning,
-  setOutput,
-  notice,
-  setFailed,
-} from "@actions/core";
+import { context as githubContext, getOctokit } from "@actions/github";
+import { getInput, info, warning, notice, setFailed } from "@actions/core";
 import "dotenv/config";
+import { Issue } from "./issue";
+import { type Octokit } from "octokit";
 
 const summary = "Comment rollup";
+const rollupRegex = new RegExp(
+  `<details>\\s*<summary>\\s*${summary}\\s*</summary>[\\s\\S]*?</details>`,
+  "im",
+);
 
-function hasLabel(
-  labels: Array<string | { name?: string }>,
-  label: string,
-): boolean {
-  let labelArray: Array<{ name?: string }>;
-
-  if (typeof labels === "string") {
-    labelArray = Array({ name: labels });
-  } else {
-    labelArray = labels as Array<{ name?: string }>;
+// Returns the issue body with the comments rolled up into a single details tag
+function issueBody(issue: Issue): string {
+  if (issue.body === undefined) {
+    throw new Error("Issue body is undefined");
   }
 
-  return labelArray.some((candidate) => candidate.name === label);
-}
-
-function issueBody(
-  issue: { body?: string | null },
-  comments: Array<{ body?: string }>,
-): string {
-  const rollupRegex = new RegExp(
-    `<details>\\s*<summary>\\s*${summary}\\s*</summary>[\\s\\S]*?</details>`,
-    "im",
-  );
   let body: string;
-  let rollup = comments.map((comment) => comment.body).join("\n\n");
+  let rollup = issue.comments.map((comment) => comment.body).join("\n\n");
   rollup = `<details><summary>${summary}</summary>\n\n${rollup}\n\n</details>`;
 
   if (issue.body?.match(rollupRegex) != null) {
@@ -55,32 +37,25 @@ async function run(): Promise<void> {
     10,
   );
 
-  const context = github_context;
-  const octokit = getOctokit(token);
-  const octokitArgs = {
-    ...context.repo,
-    issue_number: issueNumber,
-  };
+  const octokit = getOctokit(token) as Octokit;
+  const repo = `${githubContext.repo.owner}/${githubContext.repo.repo}`;
+  const issue = new Issue(octokit, repo, issueNumber);
+  await issue.getData();
 
-  const { data: issue } = await octokit.rest.issues.get(octokitArgs);
-
-  if (label && !hasLabel(issue.labels, label)) {
+  if (label !== undefined && !issue.hasLabel(label)) {
     info(`Issue ${issue.title} does not have label ${label}. Skipping.`);
     return;
   }
 
-  const { data: comments } =
-    await octokit.rest.issues.listComments(octokitArgs);
-
-  if (comments.length === 0) {
+  await issue.getComments();
+  if (issue.comments.length === 0) {
     warning(`Issue ${issue.title} does not have any comments. Skipping.`);
     return;
   }
 
-  const body = issueBody(issue, comments);
-  setOutput("body", body);
-  octokit.rest.issues.update({ ...octokitArgs, body });
-  notice(`Rolled up ${comments.length} comments to issue ${issue.title}`);
+  const body = issueBody(issue);
+  await issue.updateBody(body);
+  notice(`Rolled up ${issue.comments.length} comments to issue ${issue.title}`);
 }
 
 try {
@@ -89,4 +64,4 @@ try {
   if (error instanceof Error) setFailed(error.message);
 }
 
-export { hasLabel, issueBody, run };
+export { run };
