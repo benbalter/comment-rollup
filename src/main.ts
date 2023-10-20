@@ -12,15 +12,15 @@ import "dotenv/config";
 const summary = "Comment rollup";
 
 function hasLabel(
-  labels: (string | { name?: string })[],
-  label: string
+  labels: Array<string | { name?: string }>,
+  label: string,
 ): boolean {
-  let labelArray: { name?: string }[];
+  let labelArray: Array<{ name?: string }>;
 
   if (typeof labels === "string") {
     labelArray = Array({ name: labels });
   } else {
-    labelArray = <{ name?: string }[]>labels;
+    labelArray = labels as Array<{ name?: string }>;
   }
 
   return labelArray.some((candidate) => candidate.name === label);
@@ -28,17 +28,17 @@ function hasLabel(
 
 function issueBody(
   issue: { body?: string | null },
-  comments: { body?: string }[]
+  comments: Array<{ body?: string }>,
 ): string {
   const rollupRegex = new RegExp(
     `<details>\\s*<summary>\\s*${summary}\\s*</summary>[\\s\\S]*?</details>`,
-    "im"
+    "im",
   );
   let body: string;
   let rollup = comments.map((comment) => comment.body).join("\n\n");
   rollup = `<details><summary>${summary}</summary>\n\n${rollup}\n\n</details>`;
 
-  if (issue.body?.match(rollupRegex)) {
+  if (issue.body?.match(rollupRegex) != null) {
     body = issue.body.replace(rollupRegex, rollup);
   } else {
     body = `${issue.body}\n\n${rollup}`;
@@ -52,7 +52,7 @@ async function run(): Promise<void> {
   const label = getInput("label");
   const issueNumber = parseInt(
     getInput("issue_number", { required: true }),
-    10
+    10,
   );
 
   const context = github_context;
@@ -69,9 +69,8 @@ async function run(): Promise<void> {
     return;
   }
 
-  const { data: comments } = await octokit.rest.issues.listComments(
-    octokitArgs
-  );
+  const { data: comments } =
+    await octokit.rest.issues.listComments(octokitArgs);
 
   if (comments.length === 0) {
     warning(`Issue ${issue.title} does not have any comments. Skipping.`);
