@@ -117,7 +117,7 @@ class Rollupable {
     }
     getUploadedRollupUrl() {
         return __awaiter(this, void 0, void 0, function* () {
-            (0, console_1.info)("Getting uploaded rollup URL");
+            (0, console_1.info)(`Getting uploaded rollup URL for ${process.env.GITHUB_RUN_ID}`);
             if (process.env.GITHUB_RUN_ID === undefined) {
                 throw new Error("GITHUB_RUN_ID is undefined");
             }
@@ -127,6 +127,7 @@ class Rollupable {
                 repo: this.repoName,
                 run_id: runId,
             });
+            (0, console_1.info)(response.data);
             const id = response.data.artifacts[0].id;
             const url = `https://github.com/${this.owner}/${this.repoName}/suites/${runId}/artifacts/${id}`;
             (0, console_1.info)(`Rollup uploaded to ${url}`);

@@ -10,7 +10,8 @@
   "rules": {
     "i18n-text/no-en": "off",
     "camelcase": "warn",
-    "@typescript-eslint/restrict-template-expressions": "warn"
+    "@typescript-eslint/restrict-template-expressions": "warn",
+    "@typescript-eslint/no-floating-promises": "warn"
   },
   "env": {
     "node": true,
