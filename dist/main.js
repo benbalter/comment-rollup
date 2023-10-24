@@ -74,8 +74,8 @@ function run() {
                 (0, core_1.setFailed)(`Failed to upload rollup: ${response.failedItems}`);
             }
             // Artifact V2 should return the ID in the response. Until then...
-            (0, core_1.info)("Waiting 5 seconds for artifact to be available");
-            yield new Promise((resolve) => setTimeout(resolve, 5000));
+            (0, core_1.info)("Waiting 10 seconds for artifact to be available");
+            yield new Promise((resolve) => setTimeout(resolve, 10000));
             uploadedRollupUrl = yield rollupable.getUploadedRollupUrl();
             (0, core_1.info)(`Uploaded rollup to ${uploadedRollupUrl}`);
         }

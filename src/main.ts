@@ -73,8 +73,8 @@ async function run(): Promise<void> {
     }
 
     // Artifact V2 should return the ID in the response. Until then...
-    info("Waiting 5 seconds for artifact to be available");
-    await new Promise((resolve) => setTimeout(resolve, 5000));
+    info("Waiting 10 seconds for artifact to be available");
+    await new Promise((resolve) => setTimeout(resolve, 10000));
 
     uploadedRollupUrl = await rollupable.getUploadedRollupUrl();
     info(`Uploaded rollup to ${uploadedRollupUrl}`);
