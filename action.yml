@@ -6,7 +6,7 @@ inputs:
     required: false
   number:
     description: Issue or discussion number to rollup
-    required: true
+    required: false
   token:
     description: Github token
     required: true
