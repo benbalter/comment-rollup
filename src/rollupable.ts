@@ -94,7 +94,7 @@ export class Rollupable {
     return this._data?.id;
   }
 
-  public rollup() {
+  public rollup(downloadUrl?: string) {
     let md = "";
 
     if (this.comments === undefined) {
@@ -103,6 +103,10 @@ export class Rollupable {
 
     for (const comment of this.comments) {
       md += `From: ${comment.user.login}\n\n${comment.body}\n\n`;
+    }
+
+    if (downloadUrl !== undefined) {
+      md += `[Download rollup](${downloadUrl})\n\n`;
     }
 
     return md;
@@ -144,6 +148,22 @@ export class Rollupable {
     );
   }
 
+  public async getUploadedRollupUrl() {
+    if (process.env.GITHUB_RUN_ID === undefined) {
+      throw new Error("GITHUB_RUN_ID is undefined");
+    }
+
+    const runId = parseInt(process.env.GITHUB_RUN_ID);
+    const response = await this.octokit.rest.actions.listWorkflowRunArtifacts({
+      owner: this.owner,
+      repo: this.repoName,
+      run_id: runId,
+    });
+
+    const id = response.data.artifacts[0].id;
+    return `https://github.com/${this.owner}/${this.repoName}/suites/${runId}/artifacts/${id}`;
+  }
+
   // Returns true if the issue has the given label
   public hasLabel(label: string): boolean {
     if (this.labels === undefined) {
@@ -161,17 +181,17 @@ export class Rollupable {
     throw new Error("Not implemented");
   }
 
-  public async updateBody(): Promise<void> {
+  public async updateBody(downloadUrl?: string): Promise<void> {
     throw new Error("Not implemented");
   }
 
-  public bodyWithRollup(): string {
+  public bodyWithRollup(downloadUrl?: string): string {
     if (this.body === undefined) {
       throw new Error("Rollupable body is undefined");
     }
 
     let body: string;
-    let rollup = this.comments?.map((comment) => comment.body).join("\n\n");
+    let rollup = this.rollup(downloadUrl);
     rollup = `<details><summary>${summary}</summary>\n\n${rollup}\n\n</details>`;
 
     if (this.body?.match(rollupRegex) != null) {

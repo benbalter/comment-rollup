@@ -82,11 +82,11 @@ export class Discussion extends Rollupable {
     this._data = response.repository.discussion;
   }
 
-  public async updateBody() {
-    setOutput("Updating body to: ", this.bodyWithRollup());
+  public async updateBody(downloadUrl?: string) {
+    setOutput("Updating body to: ", this.bodyWithRollup(downloadUrl));
     await this.octokit.graphql(updateBodyMutation, {
       discussionId: this.id,
-      body: this.bodyWithRollup(),
+      body: this.bodyWithRollup(downloadUrl),
     });
   }
 }

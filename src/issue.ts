@@ -24,11 +24,11 @@ export class Issue extends Rollupable {
     };
   }
 
-  public async updateBody() {
-    setOutput("Updating body to: ", this.bodyWithRollup());
+  public async updateBody(downloadUrl?: string) {
+    setOutput("Updating body to: ", this.bodyWithRollup(downloadUrl));
     await this.octokit.rest.issues.update({
       ...this.octokitArgs,
-      body: this.bodyWithRollup(),
+      body: this.bodyWithRollup(downloadUrl),
     });
   }
 

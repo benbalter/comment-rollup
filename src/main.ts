@@ -65,15 +65,23 @@ async function run(): Promise<void> {
     return;
   }
 
-  await rollupable.updateBody();
+  let uploadedRollupUrl: string | undefined;
+  if (getInput("LINK_TO_DOC") === "true") {
+    const response = await rollupable.uploadRollup();
+    if (response.failedItems.length > 0) {
+      setFailed(`Failed to upload rollup: ${response.failedItems}`);
+    }
+
+    uploadedRollupUrl = await rollupable.getUploadedRollupUrl();
+    info(`Uploaded rollup to ${uploadedRollupUrl}`);
+  } else {
+    uploadedRollupUrl = undefined;
+  }
+
+  await rollupable.updateBody(uploadedRollupUrl);
   notice(
     `Rolled up ${rollupable.comments?.length} comments to ${rollupableType} ${rollupable.title}`,
   );
-
-  if (getInput("LINK_TO_DOC") === "true") {
-    const response = await rollupable.uploadRollup();
-    console.log(JSON.stringify(response, null, 2));
-  }
 }
 
 try {
