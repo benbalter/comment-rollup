@@ -3,7 +3,7 @@ import remarkParse from "remark-parse";
 import { unified } from "unified";
 import HTMLtoDOCX from "html-to-docx";
 import { type Octokit } from "octokit";
-import { getInput } from "@actions/core";
+import { getInput, setFailed } from "@actions/core";
 import { GitHub, getOctokitOptions } from "@actions/github/lib/utils";
 import { paginateGraphql } from "@octokit/plugin-paginate-graphql";
 import { writeFileSync } from "fs";
@@ -162,7 +162,10 @@ export class Rollupable {
       run_id: runId,
     });
 
-    info(response.data);
+    if (response.data.artifacts.length === 0) {
+      setFailed("No artifacts found");
+      return;
+    }
 
     const id = response.data.artifacts[0].id;
     const url = `https://github.com/${this.owner}/${this.repoName}/suites/${runId}/artifacts/${id}`;

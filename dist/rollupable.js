@@ -127,7 +127,10 @@ class Rollupable {
                 repo: this.repoName,
                 run_id: runId,
             });
-            (0, console_1.info)(response.data);
+            if (response.data.artifacts.length === 0) {
+                (0, core_1.setFailed)("No artifacts found");
+                return;
+            }
             const id = response.data.artifacts[0].id;
             const url = `https://github.com/${this.owner}/${this.repoName}/suites/${runId}/artifacts/${id}`;
             (0, console_1.info)(`Rollup uploaded to ${url}`);
