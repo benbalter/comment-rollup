@@ -71,7 +71,8 @@ async function run(): Promise<void> {
   );
 
   if (getInput("LINK_TO_DOC") === "true") {
-    await rollupable.uploadRollup();
+    const response = await rollupable.uploadRollup();
+    console.log(JSON.stringify(response, null, 2));
   }
 }
 
