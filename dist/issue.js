@@ -35,10 +35,10 @@ class Issue extends rollupable_1.Rollupable {
             };
         });
     }
-    updateBody() {
+    updateBody(downloadUrl) {
         return __awaiter(this, void 0, void 0, function* () {
-            (0, core_1.setOutput)("Updating body to: ", this.bodyWithRollup());
-            yield this.octokit.rest.issues.update(Object.assign(Object.assign({}, this.octokitArgs), { body: this.bodyWithRollup() }));
+            (0, core_1.setOutput)("Updating body to: ", this.bodyWithRollup(downloadUrl));
+            yield this.octokit.rest.issues.update(Object.assign(Object.assign({}, this.octokitArgs), { body: this.bodyWithRollup(downloadUrl) }));
         });
     }
     // Returns an array of comments on the issue

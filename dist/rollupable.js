@@ -67,13 +67,16 @@ class Rollupable {
         var _a;
         return (_a = this._data) === null || _a === void 0 ? void 0 : _a.id;
     }
-    rollup() {
+    rollup(downloadUrl) {
         let md = "";
         if (this.comments === undefined) {
             return;
         }
         for (const comment of this.comments) {
             md += `From: ${comment.user.login}\n\n${comment.body}\n\n`;
+        }
+        if (downloadUrl !== undefined) {
+            md += `[Download rollup](${downloadUrl})\n\n`;
         }
         return md;
     }
@@ -112,6 +115,24 @@ class Rollupable {
             return yield artifactClient.uploadArtifact(name, files, rootDirectory, options);
         });
     }
+    getUploadedRollupUrl() {
+        return __awaiter(this, void 0, void 0, function* () {
+            (0, console_1.info)("Getting uploaded rollup URL");
+            if (process.env.GITHUB_RUN_ID === undefined) {
+                throw new Error("GITHUB_RUN_ID is undefined");
+            }
+            const runId = parseInt(process.env.GITHUB_RUN_ID);
+            const response = yield this.octokit.rest.actions.listWorkflowRunArtifacts({
+                owner: this.owner,
+                repo: this.repoName,
+                run_id: runId,
+            });
+            const id = response.data.artifacts[0].id;
+            const url = `https://github.com/${this.owner}/${this.repoName}/suites/${runId}/artifacts/${id}`;
+            (0, console_1.info)(`Rollup uploaded to ${url}`);
+            return url;
+        });
+    }
     // Returns true if the issue has the given label
     hasLabel(label) {
         var _a;
@@ -130,20 +151,20 @@ class Rollupable {
             throw new Error("Not implemented");
         });
     }
-    updateBody() {
+    updateBody(downloadUrl) {
         return __awaiter(this, void 0, void 0, function* () {
             throw new Error("Not implemented");
         });
     }
-    bodyWithRollup() {
-        var _a, _b;
+    bodyWithRollup(downloadUrl) {
+        var _a;
         if (this.body === undefined) {
             throw new Error("Rollupable body is undefined");
         }
         let body;
-        let rollup = (_a = this.comments) === null || _a === void 0 ? void 0 : _a.map((comment) => comment.body).join("\n\n");
+        let rollup = this.rollup(downloadUrl);
         rollup = `<details><summary>${summary}</summary>\n\n${rollup}\n\n</details>`;
-        if (((_b = this.body) === null || _b === void 0 ? void 0 : _b.match(rollupRegex)) != null) {
+        if (((_a = this.body) === null || _a === void 0 ? void 0 : _a.match(rollupRegex)) != null) {
             body = this.body.replace(rollupRegex, rollup);
         }
         else {

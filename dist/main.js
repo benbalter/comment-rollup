@@ -67,11 +67,20 @@ function run() {
             (0, core_1.warning)(`${rollupableType} ${rollupable.title} does not have any comments. Skipping.`);
             return;
         }
-        yield rollupable.updateBody();
-        (0, core_1.notice)(`Rolled up ${(_b = rollupable.comments) === null || _b === void 0 ? void 0 : _b.length} comments to ${rollupableType} ${rollupable.title}`);
+        let uploadedRollupUrl;
         if ((0, core_1.getInput)("LINK_TO_DOC") === "true") {
-            yield rollupable.uploadRollup();
+            const response = yield rollupable.uploadRollup();
+            if (response.failedItems.length > 0) {
+                (0, core_1.setFailed)(`Failed to upload rollup: ${response.failedItems}`);
+            }
+            uploadedRollupUrl = yield rollupable.getUploadedRollupUrl();
+            (0, core_1.info)(`Uploaded rollup to ${uploadedRollupUrl}`);
         }
+        else {
+            uploadedRollupUrl = undefined;
+        }
+        yield rollupable.updateBody(uploadedRollupUrl);
+        (0, core_1.notice)(`Rolled up ${(_b = rollupable.comments) === null || _b === void 0 ? void 0 : _b.length} comments to ${rollupableType} ${rollupable.title}`);
     });
 }
 exports.run = run;
