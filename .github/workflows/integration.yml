@@ -1,0 +1,17 @@
+on: 
+  issue_comment: {}
+  discussion_comment: {}
+
+name: Rollup weekly comments
+
+jobs:
+  comment_rollup:
+    runs-on: ubuntu-latest
+    name: Comment rollup
+
+    steps:
+      - name: Rollup comments
+        uses: benbalter/comment-rollup@main
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          link_to_doc: true
