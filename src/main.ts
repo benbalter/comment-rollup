@@ -72,6 +72,9 @@ async function run(): Promise<void> {
       setFailed(`Failed to upload rollup: ${response.failedItems}`);
     }
 
+    // Artifact V2 should return the ID in the response. Until then...
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+
     uploadedRollupUrl = await rollupable.getUploadedRollupUrl();
     info(`Uploaded rollup to ${uploadedRollupUrl}`);
   } else {
