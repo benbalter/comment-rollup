@@ -149,6 +149,8 @@ export class Rollupable {
   }
 
   public async getUploadedRollupUrl() {
+    info("Getting uploaded rollup URL");
+
     if (process.env.GITHUB_RUN_ID === undefined) {
       throw new Error("GITHUB_RUN_ID is undefined");
     }
@@ -161,7 +163,10 @@ export class Rollupable {
     });
 
     const id = response.data.artifacts[0].id;
-    return `https://github.com/${this.owner}/${this.repoName}/suites/${runId}/artifacts/${id}`;
+    const url = `https://github.com/${this.owner}/${this.repoName}/suites/${runId}/artifacts/${id}`;
+
+    info(`Rollup uploaded to ${url}`);
+    return url;
   }
 
   // Returns true if the issue has the given label
