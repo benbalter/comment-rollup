@@ -1,61 +1,74 @@
-import { context as githubContext, getOctokit } from "@actions/github";
+import { type Rollupable } from "./rollupable";
+import { context as githubContext } from "@actions/github";
 import { getInput, info, warning, notice, setFailed } from "@actions/core";
 import "dotenv/config";
 import { Issue } from "./issue";
-import { type Octokit } from "octokit";
+import { Discussion } from "./discussion";
 
-const summary = "Comment rollup";
-const rollupRegex = new RegExp(
-  `<details>\\s*<summary>\\s*${summary}\\s*</summary>[\\s\\S]*?</details>`,
-  "im",
-);
+function parseContext() {
+  const types = ["issue", "discussion"];
+  let number: number | undefined;
+  let rollupableType = "";
 
-// Returns the issue body with the comments rolled up into a single details tag
-function issueBody(issue: Issue): string {
-  if (issue.body === undefined) {
-    throw new Error("Issue body is undefined");
+  if (getInput("type") !== "" && getInput("number") !== "") {
+    number = parseInt(getInput("number"), 10);
+    rollupableType = getInput("type");
+  } else if (githubContext.payload.issue !== undefined) {
+    number = githubContext.payload.issue?.number;
+    rollupableType = "issue";
+  } else if (githubContext.payload.discussion !== undefined) {
+    number = githubContext.payload.discussion?.number;
+    rollupableType = "discussion";
   }
 
-  let body: string;
-  let rollup = issue.comments.map((comment) => comment.body).join("\n\n");
-  rollup = `<details><summary>${summary}</summary>\n\n${rollup}\n\n</details>`;
-
-  if (issue.body?.match(rollupRegex) != null) {
-    body = issue.body.replace(rollupRegex, rollup);
-  } else {
-    body = `${issue.body}\n\n${rollup}`;
+  if (!types.includes(rollupableType)) {
+    throw new Error(`Unknown rollupable type ${rollupableType}`);
   }
 
-  return body;
+  if (number === undefined) {
+    throw new Error("No issue or discussion found in payload");
+  }
+
+  return { number, rollupableType };
 }
 
 async function run(): Promise<void> {
-  const token = getInput("token", { required: true });
   const label = getInput("label");
-  const issueNumber = parseInt(
-    getInput("issue_number", { required: true }),
-    10,
-  );
-
-  const octokit = getOctokit(token) as Octokit;
+  const { number, rollupableType } = parseContext();
   const repo = `${githubContext.repo.owner}/${githubContext.repo.repo}`;
-  const issue = new Issue(octokit, repo, issueNumber);
-  await issue.getData();
+  let rollupable: Rollupable;
 
-  if (label !== undefined && !issue.hasLabel(label)) {
-    info(`Issue ${issue.title} does not have label ${label}. Skipping.`);
+  info(`Rolling up ${rollupableType} #${number} in ${repo}`);
+
+  if (rollupableType === "issue") {
+    rollupable = new Issue(repo, number);
+  } else if (rollupableType === "discussion") {
+    rollupable = new Discussion(repo, number);
+  } else {
+    throw new Error(`Unknown rollupable type ${rollupableType}`);
+  }
+
+  await rollupable.getData();
+
+  if (label !== undefined && label !== "" && !rollupable.hasLabel(label)) {
+    info(
+      `${rollupableType} ${rollupable.title} does not have label ${label}. Skipping.`,
+    );
     return;
   }
 
-  await issue.getComments();
-  if (issue.comments.length === 0) {
-    warning(`Issue ${issue.title} does not have any comments. Skipping.`);
+  await rollupable.getComments();
+  if (rollupable.comments?.length === 0) {
+    warning(
+      `${rollupableType} ${rollupable.title} does not have any comments. Skipping.`,
+    );
     return;
   }
 
-  const body = issueBody(issue);
-  await issue.updateBody(body);
-  notice(`Rolled up ${issue.comments.length} comments to issue ${issue.title}`);
+  await rollupable.updateBody();
+  notice(
+    `Rolled up ${rollupable.comments?.length} comments to ${rollupableType} ${rollupable.title}`,
+  );
 }
 
 try {

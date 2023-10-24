@@ -9,59 +9,66 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.run = exports.issueBody = exports.hasLabel = void 0;
+exports.run = void 0;
 const github_1 = require("@actions/github");
 const core_1 = require("@actions/core");
 require("dotenv/config");
-const summary = "Comment rollup";
-function hasLabel(labels, label) {
-    let labelArray;
-    if (typeof labels === "string") {
-        labelArray = Array({ name: labels });
+const issue_1 = require("./issue");
+const discussion_1 = require("./discussion");
+function parseContext() {
+    var _a, _b;
+    const types = ["issue", "discussion"];
+    let number;
+    let rollupableType = "";
+    if ((0, core_1.getInput)("type") !== "" && (0, core_1.getInput)("number") !== "") {
+        number = parseInt((0, core_1.getInput)("number"), 10);
+        rollupableType = (0, core_1.getInput)("type");
     }
-    else {
-        labelArray = labels;
+    else if (github_1.context.payload.issue !== undefined) {
+        number = (_a = github_1.context.payload.issue) === null || _a === void 0 ? void 0 : _a.number;
+        rollupableType = "issue";
     }
-    return labelArray.some((candidate) => candidate.name === label);
+    else if (github_1.context.payload.discussion !== undefined) {
+        number = (_b = github_1.context.payload.discussion) === null || _b === void 0 ? void 0 : _b.number;
+        rollupableType = "discussion";
+    }
+    if (!types.includes(rollupableType)) {
+        throw new Error(`Unknown rollupable type ${rollupableType}`);
+    }
+    if (number === undefined) {
+        throw new Error("No issue or discussion found in payload");
+    }
+    return { number, rollupableType };
 }
-exports.hasLabel = hasLabel;
-function issueBody(issue, comments) {
-    var _a;
-    const rollupRegex = new RegExp(`<details>\\s*<summary>\\s*${summary}\\s*</summary>[\\s\\S]*?</details>`, "im");
-    let body;
-    let rollup = comments.map((comment) => comment.body).join("\n\n");
-    rollup = `<details><summary>${summary}</summary>\n\n${rollup}\n\n</details>`;
-    if ((_a = issue.body) === null || _a === void 0 ? void 0 : _a.match(rollupRegex)) {
-        body = issue.body.replace(rollupRegex, rollup);
-    }
-    else {
-        body = `${issue.body}\n\n${rollup}`;
-    }
-    return body;
-}
-exports.issueBody = issueBody;
 function run() {
+    var _a, _b;
     return __awaiter(this, void 0, void 0, function* () {
-        const token = (0, core_1.getInput)("token", { required: true });
         const label = (0, core_1.getInput)("label");
-        const issueNumber = parseInt((0, core_1.getInput)("issue_number", { required: true }), 10);
-        const context = github_1.context;
-        const octokit = (0, github_1.getOctokit)(token);
-        const octokitArgs = Object.assign(Object.assign({}, context.repo), { issue_number: issueNumber });
-        const { data: issue } = yield octokit.rest.issues.get(octokitArgs);
-        if (label && !hasLabel(issue.labels, label)) {
-            (0, core_1.info)(`Issue ${issue.title} does not have label ${label}. Skipping.`);
+        const { number, rollupableType } = parseContext();
+        const repo = `${github_1.context.repo.owner}/${github_1.context.repo.repo}`;
+        let rollupable;
+        (0, core_1.info)(`Rolling up ${rollupableType} #${number} in ${repo}`);
+        if (rollupableType === "issue") {
+            rollupable = new issue_1.Issue(repo, number);
+        }
+        else if (rollupableType === "discussion") {
+            rollupable = new discussion_1.Discussion(repo, number);
+        }
+        else {
+            throw new Error(`Unknown rollupable type ${rollupableType}`);
+        }
+        yield rollupable.getData();
+        if (label !== undefined && label !== "" && !rollupable.hasLabel(label)) {
+            (0, core_1.info)(`${rollupableType} ${rollupable.title} does not have label ${label}. Skipping.`);
             return;
         }
-        const { data: comments } = yield octokit.rest.issues.listComments(octokitArgs);
-        if (comments.length === 0) {
-            (0, core_1.warning)(`Issue ${issue.title} does not have any comments. Skipping.`);
+        yield rollupable.getComments();
+        if (((_a = rollupable.comments) === null || _a === void 0 ? void 0 : _a.length) === 0) {
+            (0, core_1.warning)(`${rollupableType} ${rollupable.title} does not have any comments. Skipping.`);
             return;
         }
-        const body = issueBody(issue, comments);
-        (0, core_1.setOutput)("body", body);
-        octokit.rest.issues.update(Object.assign(Object.assign({}, octokitArgs), { body }));
-        (0, core_1.notice)(`Rolled up ${comments.length} comments to issue ${issue.title}`);
+        yield rollupable.updateBody();
+        (0, core_1.notice)(`Rolled up ${(_b = rollupable.comments) === null || _b === void 0 ? void 0 : _b.length} comments to ${rollupableType} ${rollupable.title}`);
     });
 }
 exports.run = run;

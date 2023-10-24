@@ -2,17 +2,21 @@ name: Comment rollup
 description: Rolls up status updates into a single comment for ease of copying
 inputs:
   label:
-    description: Label of issues to rollup
+    description: Label of issues or discussions to rollup
     required: false
-  issue_number:
-    description: Issue to rollup
+  number:
+    description: Issue or discussion number to rollup
     required: true
   token:
     description: Github token
     required: true
+  type:
+    description: Type of issue or discussion to rollup
+    required: true
+    default: issue
 outputs:
   body:
     description: The resulting issue body
 runs:
   using: 'node16'
-  main: 'dist/index.js'
+  main: 'dist/main.js'
