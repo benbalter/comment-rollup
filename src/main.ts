@@ -69,6 +69,10 @@ async function run(): Promise<void> {
   notice(
     `Rolled up ${rollupable.comments?.length} comments to ${rollupableType} ${rollupable.title}`,
   );
+
+  if (getInput("LINK_TO_DOC") === "true") {
+    await rollupable.uploadRollup();
+  }
 }
 
 try {

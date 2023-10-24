@@ -14,6 +14,9 @@ inputs:
     description: Type of issue or discussion to rollup
     required: true
     default: issue
+  link_to_doc:
+    description: Whether to create and link to a .docx file
+    required: false
 outputs:
   body:
     description: The resulting issue body

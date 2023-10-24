@@ -6,6 +6,10 @@ import { type Octokit } from "octokit";
 import { getInput } from "@actions/core";
 import { GitHub, getOctokitOptions } from "@actions/github/lib/utils";
 import { paginateGraphql } from "@octokit/plugin-paginate-graphql";
+import { writeFileSync } from "fs";
+import { type Buffer } from "buffer";
+import { create as createArtifactClient } from "@actions/artifact";
+import { info } from "console";
 
 const summary = "Comment rollup";
 const rollupRegex = new RegExp(
@@ -104,13 +108,40 @@ export class Rollupable {
     return md;
   }
 
-  public async doc() {
-    const html = await unified()
+  public async htmlRollup() {
+    return await unified()
       .use(remarkParse)
       .use(remarkHtml)
       .process(this.rollup());
+  }
 
+  public async docxRollup() {
+    const html = await this.htmlRollup();
     return await HTMLtoDOCX(String(html.toString()));
+  }
+
+  public async writeRollup() {
+    info("Writing rollup to disk");
+    const docx = (await this.docxRollup()) as Buffer;
+    writeFileSync("rollup.docx", docx);
+  }
+
+  public async uploadRollup() {
+    await this.writeRollup();
+    info("Uploading rollup as artifact");
+    const artifactClient = createArtifactClient();
+    const name = "rollup.docx";
+    const files = ["rollup.docx"];
+    const rootDirectory = ".";
+    const options = {
+      retentionDays: 7,
+    };
+    return await artifactClient.uploadArtifact(
+      name,
+      files,
+      rootDirectory,
+      options,
+    );
   }
 
   // Returns true if the issue has the given label

@@ -20,6 +20,9 @@ const html_to_docx_1 = __importDefault(require("html-to-docx"));
 const core_1 = require("@actions/core");
 const utils_1 = require("@actions/github/lib/utils");
 const plugin_paginate_graphql_1 = require("@octokit/plugin-paginate-graphql");
+const fs_1 = require("fs");
+const artifact_1 = require("@actions/artifact");
+const console_1 = require("console");
 const summary = "Comment rollup";
 const rollupRegex = new RegExp(`<details>\\s*<summary>\\s*${summary}\\s*</summary>[\\s\\S]*?</details>`, "im");
 class Rollupable {
@@ -74,13 +77,39 @@ class Rollupable {
         }
         return md;
     }
-    doc() {
+    htmlRollup() {
         return __awaiter(this, void 0, void 0, function* () {
-            const html = yield (0, unified_1.unified)()
+            return yield (0, unified_1.unified)()
                 .use(remark_parse_1.default)
                 .use(remark_html_1.default)
                 .process(this.rollup());
+        });
+    }
+    docxRollup() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const html = yield this.htmlRollup();
             return yield (0, html_to_docx_1.default)(String(html.toString()));
+        });
+    }
+    writeRollup() {
+        return __awaiter(this, void 0, void 0, function* () {
+            (0, console_1.info)("Writing rollup to disk");
+            const docx = (yield this.docxRollup());
+            (0, fs_1.writeFileSync)("rollup.docx", docx);
+        });
+    }
+    uploadRollup() {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield this.writeRollup();
+            (0, console_1.info)("Uploading rollup as artifact");
+            const artifactClient = (0, artifact_1.create)();
+            const name = "rollup.docx";
+            const files = ["rollup.docx"];
+            const rootDirectory = ".";
+            const options = {
+                retentionDays: 7,
+            };
+            return yield artifactClient.uploadArtifact(name, files, rootDirectory, options);
         });
     }
     // Returns true if the issue has the given label

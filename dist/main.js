@@ -69,6 +69,9 @@ function run() {
         }
         yield rollupable.updateBody();
         (0, core_1.notice)(`Rolled up ${(_b = rollupable.comments) === null || _b === void 0 ? void 0 : _b.length} comments to ${rollupableType} ${rollupable.title}`);
+        if ((0, core_1.getInput)("LINK_TO_DOC") === "true") {
+            yield rollupable.uploadRollup();
+        }
     });
 }
 exports.run = run;
