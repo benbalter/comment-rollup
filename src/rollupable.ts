@@ -101,12 +101,12 @@ export class Rollupable {
       return;
     }
 
-    for (const comment of this.comments) {
-      md += `From: ${comment.user.login}\n\n${comment.body}\n\n`;
-    }
-
     if (downloadUrl !== undefined) {
       md += `[Download rollup](${downloadUrl})\n\n`;
+    }
+
+    for (const comment of this.comments) {
+      md += `From: ${comment.user.login}\n\n${comment.body}\n\n`;
     }
 
     return md;
@@ -157,7 +157,7 @@ export class Rollupable {
     }
 
     if (id === undefined) {
-      return `https://github.com/${this.owner}/${this.repoName}/actions/runs/${runID}`;
+      return `https://github.com/${this.owner}/${this.repoName}/actions/runs/${runID}#:~:text=rollup.docx`;
     } else {
       return `https://github.com/${this.owner}/${this.repoName}/suites/${runID}/artifacts/${id}`;
     }
