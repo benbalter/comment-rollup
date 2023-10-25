@@ -28,7 +28,7 @@ jobs:
 
     steps:
       - name: Rollup comments
-        uses: benbalter/comment-rollup@main
+        uses: benbalter/comment-rollup@v2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           link_to_doc: true # Optional, remove if you don't want a Word doc.
