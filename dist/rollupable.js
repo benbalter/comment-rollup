@@ -112,30 +112,15 @@ class Rollupable {
             const options = {
                 retentionDays: 7,
             };
-            return yield artifactClient.uploadArtifact(name, files, rootDirectory, options);
+            return artifactClient.uploadArtifact(name, files, rootDirectory, options);
         });
     }
-    getUploadedRollupUrl() {
-        return __awaiter(this, void 0, void 0, function* () {
-            (0, console_1.info)(`Getting uploaded rollup URL for ${process.env.GITHUB_RUN_ID}`);
-            if (process.env.GITHUB_RUN_ID === undefined) {
-                throw new Error("GITHUB_RUN_ID is undefined");
-            }
-            const runId = parseInt(process.env.GITHUB_RUN_ID);
-            const response = yield this.octokit.rest.actions.listWorkflowRunArtifacts({
-                owner: this.owner,
-                repo: this.repoName,
-                run_id: runId,
-            });
-            if (response.data.artifacts.length === 0) {
-                (0, core_1.setFailed)("No artifacts found");
-                return;
-            }
-            const id = response.data.artifacts[0].id;
-            const url = `https://github.com/${this.owner}/${this.repoName}/suites/${runId}/artifacts/${id}`;
-            (0, console_1.info)(`Rollup uploaded to ${url}`);
-            return url;
-        });
+    getUploadedRollupUrl(id) {
+        const runID = process.env.GITHUB_RUN_ID;
+        if (id === undefined || runID === undefined) {
+            return;
+        }
+        return `https://github.com/${this.owner}/${this.repoName}/suites/${runID}/artifacts/${id}`;
     }
     // Returns true if the issue has the given label
     hasLabel(label) {

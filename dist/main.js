@@ -70,13 +70,10 @@ function run() {
         let uploadedRollupUrl;
         if ((0, core_1.getInput)("LINK_TO_DOC") === "true") {
             const response = yield rollupable.uploadRollup();
-            if (response.failedItems.length > 0) {
-                (0, core_1.setFailed)(`Failed to upload rollup: ${response.failedItems}`);
+            if (response.success !== true) {
+                (0, core_1.setFailed)(`Failed to upload rollup.`);
             }
-            // Artifact V2 should return the ID in the response. Until then...
-            (0, core_1.info)("Waiting 10 seconds for artifact to be available");
-            yield new Promise((resolve) => setTimeout(resolve, 10000));
-            uploadedRollupUrl = yield rollupable.getUploadedRollupUrl();
+            uploadedRollupUrl = rollupable.getUploadedRollupUrl(response.id);
             (0, core_1.info)(`Uploaded rollup to ${uploadedRollupUrl}`);
         }
         else {

@@ -68,15 +68,11 @@ async function run(): Promise<void> {
   let uploadedRollupUrl: string | undefined;
   if (getInput("LINK_TO_DOC") === "true") {
     const response = await rollupable.uploadRollup();
-    if (response.failedItems.length > 0) {
-      setFailed(`Failed to upload rollup: ${response.failedItems}`);
+    if (!response.success) {
+      setFailed(`Failed to upload rollup.`);
     }
 
-    // Artifact V2 should return the ID in the response. Until then...
-    info("Waiting 10 seconds for artifact to be available");
-    await new Promise((resolve) => setTimeout(resolve, 10000));
-
-    uploadedRollupUrl = await rollupable.getUploadedRollupUrl();
+    uploadedRollupUrl = rollupable.getUploadedRollupUrl(response.id);
     info(`Uploaded rollup to ${uploadedRollupUrl}`);
   } else {
     uploadedRollupUrl = undefined;

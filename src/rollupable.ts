@@ -3,7 +3,7 @@ import remarkParse from "remark-parse";
 import { unified } from "unified";
 import HTMLtoDOCX from "html-to-docx";
 import { type Octokit } from "octokit";
-import { getInput, setFailed } from "@actions/core";
+import { getInput } from "@actions/core";
 import { GitHub, getOctokitOptions } from "@actions/github/lib/utils";
 import { paginateGraphql } from "@octokit/plugin-paginate-graphql";
 import { writeFileSync } from "fs";
@@ -148,30 +148,14 @@ export class Rollupable {
     );
   }
 
-  public async getUploadedRollupUrl() {
-    info(`Getting uploaded rollup URL for ${process.env.GITHUB_RUN_ID}`);
+  public getUploadedRollupUrl(id?: number) {
+    const runID = process.env.GITHUB_RUN_ID;
 
-    if (process.env.GITHUB_RUN_ID === undefined) {
-      throw new Error("GITHUB_RUN_ID is undefined");
-    }
-
-    const runId = parseInt(process.env.GITHUB_RUN_ID);
-    const response = await this.octokit.rest.actions.listWorkflowRunArtifacts({
-      owner: this.owner,
-      repo: this.repoName,
-      run_id: runId,
-    });
-
-    if (response.data.artifacts.length === 0) {
-      setFailed("No artifacts found");
+    if (id === undefined || runID === undefined) {
       return;
     }
 
-    const id = response.data.artifacts[0].id;
-    const url = `https://github.com/${this.owner}/${this.repoName}/suites/${runId}/artifacts/${id}`;
-
-    info(`Rollup uploaded to ${url}`);
-    return url;
+    return `https://github.com/${this.owner}/${this.repoName}/suites/${runID}/artifacts/${id}`;
   }
 
   // Returns true if the issue has the given label
