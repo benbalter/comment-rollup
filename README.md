@@ -11,6 +11,7 @@ It is based on https://github.com/actions/typescript-action.
 * `token` - `${{ secrets.GITHUB_TOKEN }}` **Required**
 * `label` - A label to require on issues before rolling up comments (optional)
 * `link_to_doc` - Whether to link to a Word document with the rollup (optional)
+* `group_by_headings` - Whether to group comments by heading (BETA) (optional)
 
 ## Example usage
 
