@@ -33,5 +33,6 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           link_to_doc: true # Optional, remove if you don't want a Word doc.
           label: weekly-rollup # Optional, limits rollups to issues/discussions with the given label
+          group_by_heading: true # Optional, groups comments by heading (BETA)
 ```
 

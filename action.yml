@@ -17,6 +17,9 @@ inputs:
   link_to_doc:
     description: Whether to create and link to a .docx file
     required: false
+  group_by_heading:
+    description: By default, the rollup is grouped by comment. If true, will group bullets by common headings
+    required: false
 outputs:
   body:
     description: The resulting issue body
