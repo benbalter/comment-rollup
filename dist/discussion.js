@@ -17,6 +17,7 @@ const dataQuery = `
     repository(name: $name, owner: $owner) {
       discussion(number: $number) {
         id
+        title
         labels(first: 10) {
           nodes {
             name
