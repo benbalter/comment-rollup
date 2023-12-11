@@ -80,6 +80,11 @@ export class Discussion extends Rollupable {
       this.octokitArgs,
     );
     this._data = response.repository.discussion;
+
+    // backwards compatibility with the REST API response data used for Issues
+    if (this._data !== undefined) {
+      this._data.labels = response.repository.discussion.labels.nodes;
+    }
   }
 
   public async updateBody(downloadUrl?: string) {
