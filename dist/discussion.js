@@ -85,6 +85,10 @@ class Discussion extends rollupable_1.Rollupable {
             (0, core_1.info)(`Getting data for discussion ${this.number}`);
             const response = yield this.octokit.graphql(dataQuery, this.octokitArgs);
             this._data = response.repository.discussion;
+            // backwards compatibility with the REST API response data used for Issues
+            if (this._data !== undefined) {
+                this._data.labels = response.repository.discussion.labels.nodes;
+            }
         });
     }
     updateBody(downloadUrl) {

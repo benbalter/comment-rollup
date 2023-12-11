@@ -67,6 +67,38 @@ class Rollupable {
         var _a;
         return (_a = this._data) === null || _a === void 0 ? void 0 : _a.id;
     }
+    commentsByHeadings() {
+        const headings = {};
+        let currentHeading = "";
+        const headingRegex = /^(#+ .*?)$/m;
+        if (this.comments === undefined) {
+            return "";
+        }
+        for (const comment of this.comments) {
+            const parts = comment.body.split(headingRegex);
+            for (const part of parts) {
+                if (part === "") {
+                    continue;
+                }
+                if (part.match(headingRegex) != null) {
+                    currentHeading = part;
+                    continue;
+                }
+                if (headings[currentHeading] === undefined) {
+                    headings[currentHeading] = [];
+                }
+                headings[currentHeading].push(part.trim());
+            }
+        }
+        let output = "";
+        for (const heading in headings) {
+            output += `${heading}\n\n`;
+            for (const line of headings[heading]) {
+                output += `${line}\n\n`;
+            }
+        }
+        return output;
+    }
     rollup(downloadUrl) {
         let md = "";
         if (this.comments === undefined) {
@@ -75,8 +107,13 @@ class Rollupable {
         if (downloadUrl !== undefined) {
             md += `[Download rollup](${downloadUrl})\n\n`;
         }
-        for (const comment of this.comments) {
-            md += `From: ${comment.user.login}\n\n${comment.body}\n\n`;
+        if ((0, core_1.getInput)("group_by_headings") === "true") {
+            md = this.commentsByHeadings();
+        }
+        else {
+            for (const comment of this.comments) {
+                md += `From: ${comment.user.login}\n\n${comment.body}\n\n`;
+            }
         }
         return md;
     }
