@@ -60,6 +60,7 @@ function run() {
         yield rollupable.getData();
         if (label !== undefined && label !== "" && !rollupable.hasLabel(label)) {
             (0, core_1.info)(`${rollupableType} ${rollupable.title} does not have label ${label}. Skipping.`);
+            (0, core_1.debug)(`Labels: ${rollupable.labels}`);
             return;
         }
         yield rollupable.getComments();

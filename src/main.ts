@@ -1,6 +1,13 @@
 import { type Rollupable } from "./rollupable";
 import { context as githubContext } from "@actions/github";
-import { getInput, info, warning, notice, setFailed } from "@actions/core";
+import {
+  getInput,
+  info,
+  debug,
+  warning,
+  notice,
+  setFailed,
+} from "@actions/core";
 import "dotenv/config";
 import { Issue } from "./issue";
 import { Discussion } from "./discussion";
@@ -54,6 +61,7 @@ async function run(): Promise<void> {
     info(
       `${rollupableType} ${rollupable.title} does not have label ${label}. Skipping.`,
     );
+    debug(`Labels: ${rollupable.labels}`);
     return;
   }
 
