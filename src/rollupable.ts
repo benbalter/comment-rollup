@@ -86,8 +86,9 @@ export class Rollupable {
     return this._data?.title;
   }
 
-  public get labels() {
-    return this._data?.labels.map((label: any) => label.name);
+  // Note: _data.labels is Label[], but this.labels returns string[].
+  public get labels(): string[] | undefined {
+    return this._data?.labels.map((label: Label) => label.name);
   }
 
   public get id() {
@@ -212,7 +213,7 @@ export class Rollupable {
       return false;
     }
 
-    return this.labels?.some((candidate: Label) => candidate.name === label);
+    return this.labels?.some((candidate: string) => candidate === label);
   }
 
   public async getData(): Promise<void> {

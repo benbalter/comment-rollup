@@ -59,6 +59,7 @@ class Rollupable {
         var _a;
         return (_a = this._data) === null || _a === void 0 ? void 0 : _a.title;
     }
+    // Note: _data.labels is Label[], but this.labels returns string[].
     get labels() {
         var _a;
         return (_a = this._data) === null || _a === void 0 ? void 0 : _a.labels.map((label) => label.name);
@@ -171,7 +172,7 @@ class Rollupable {
         if (this.labels === undefined) {
             return false;
         }
-        return (_a = this.labels) === null || _a === void 0 ? void 0 : _a.some((candidate) => candidate.name === label);
+        return (_a = this.labels) === null || _a === void 0 ? void 0 : _a.some((candidate) => candidate === label);
     }
     getData() {
         return __awaiter(this, void 0, void 0, function* () {
