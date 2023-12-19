@@ -19,6 +19,10 @@ const expectations = {
 }
 type IssueKey = keyof Issue;
 
+test("returns Octokit", () => {
+  expect(issue.octokit).toBeDefined();
+});
+
 describe("getData", () => {
   beforeAll(() => {
     const url = `https://api.github.com/repos/${repo}/issues/${number}`;
