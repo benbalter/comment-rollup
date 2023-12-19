@@ -43,9 +43,14 @@ export class Rollupable {
   _number: number;
   _comments: Comment[] | undefined;
 
-  public constructor(repository: string, number: number) {
+  public constructor(repository: string, number: number, octokit?: Octokit) {
     this._repository = repository;
     this._number = number;
+
+    if (octokit !== undefined && octokit !== null) {
+      this._octokit = octokit;
+      return this;
+    }
 
     const OctokitWithPaginate = GitHub.plugin(paginateGraphql);
     const token = getInput("token", { required: true });

@@ -1,9 +1,9 @@
 {
-  "plugins": ["@typescript-eslint", "github"],
+  "plugins": ["@typescript-eslint", "github", "jest"],
   "extends": ["standard-with-typescript", "plugin:github/recommended", "plugin:github/typescript"],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
-    "ecmaVersion": 9,
+    "ecmaVersion": "latest",
     "sourceType": "module",
     "project": "./tsconfig.json"
   },
@@ -15,6 +15,6 @@
   },
   "env": {
     "node": true,
-    "es6": true
+    "es2021": true
   }
 }

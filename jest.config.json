@@ -1,0 +1,9 @@
+{
+  "preset": "ts-jest/presets/js-with-babel-esm",
+  "coveragePathIgnorePatterns": [
+    "/node_modules/"
+  ], 
+  "transformIgnorePatterns": [
+    "!node_modules/"
+  ]
+}
