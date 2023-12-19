@@ -86,6 +86,10 @@ describe("getComments", () => {
   });
 
   test("sets comments", () => {
-    expect(discussion._comments).toBeDefined();
+    expect(discussion.comments).toBeDefined();
+
+    if (discussion.comments) {
+      expect(discussion.comments.length).toEqual(3);
+    }
   });
 });

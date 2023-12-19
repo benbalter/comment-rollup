@@ -40,6 +40,16 @@ export function mockGraphQL(
   );
 }
 
+export function mockLabels() {
+  return faker.word
+    .words()
+    .split(" ")
+    .map((word: string) => {
+      return {
+        name: word,
+      };
+    });
+}
 export function mockDiscussionData(overrides?: Record<string, any>) {
   const repo = faker.company.buzzNoun();
   const owner = faker.company.buzzNoun();
@@ -56,14 +66,7 @@ export function mockDiscussionData(overrides?: Record<string, any>) {
     },
     body: faker.lorem.paragraphs(),
     labels: {
-      nodes: faker.word
-        .words()
-        .split(" ")
-        .map((word: string) => {
-          return {
-            name: word,
-          };
-        }),
+      nodes: mockLabels(),
     },
   };
   if (overrides === undefined) {
@@ -73,14 +76,31 @@ export function mockDiscussionData(overrides?: Record<string, any>) {
 }
 
 export function mockCommentData(overrides?: Record<string, any>) {
+  const login = faker.internet.userName();
   const defaults = {
     body: faker.lorem.paragraphs(),
     author: {
-      login: faker.internet.userName(),
+      login,
+    },
+    user: {
+      login,
     },
   };
   if (overrides === undefined) {
     return defaults;
   }
   return { ...defaults, ...overrides };
+}
+
+export function mockIssueData(overrides?: Record<string, any>) {
+  const data = {
+    labels: mockLabels(),
+    title: faker.company.buzzPhrase(),
+    body: faker.lorem.paragraphs(),
+  };
+
+  if (overrides === undefined) {
+    return data;
+  }
+  return { ...data, ...overrides };
 }
