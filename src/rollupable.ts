@@ -4,12 +4,14 @@ import { unified } from "unified";
 import HTMLtoDOCX from "html-to-docx";
 import { type Octokit } from "octokit";
 import { getInput } from "@actions/core";
+// @ts-expect-error Not sure why it can't find the type definitions
 import { GitHub, getOctokitOptions } from "@actions/github/lib/utils";
 import { paginateGraphql } from "@octokit/plugin-paginate-graphql";
 import { writeFileSync } from "fs";
 import { type Buffer } from "buffer";
-import { create as createArtifactClient } from "@actions/artifact";
+import { DefaultArtifactClient } from "@actions/artifact";
 import { info } from "console";
+import { type VFile } from "vfile";
 
 const summary = "Comment rollup";
 const rollupRegex = new RegExp(
@@ -18,14 +20,17 @@ const rollupRegex = new RegExp(
 );
 
 export interface Label {
-  name: string;
+  name?: string | undefined;
 }
 
 export interface Comment {
-  body: string;
-  user: {
-    login: string;
-  };
+  body?: string | undefined;
+  user?:
+    | {
+        login?: string | undefined;
+      }
+    | undefined
+    | null;
 }
 
 export interface RollupableData {
@@ -36,51 +41,55 @@ export interface RollupableData {
   id?: string;
 }
 
-export class Rollupable {
+export interface RollupableClass {
+  octokit: Octokit;
+  repository: string;
+  number: number;
+  repoName: string;
+  owner: string;
+  comments: Comment[] | undefined;
+  body: string | undefined;
+  title: string | undefined;
+  labels: string[] | undefined;
+  id: string | undefined;
+  commentsByHeadings: () => string;
+  rollup: (downloadUrl?: string) => string | undefined;
+  htmlRollup: () => Promise<VFile>;
+  docxRollup: () => Promise<Buffer | Blob>;
+  writeRollup: () => Promise<void>;
+  uploadRollup: () => Promise<number | undefined>;
+  getUploadedRollupUrl: (id?: number) => string | undefined;
+  hasLabel: (label: string) => boolean;
+  getData: () => Promise<void>;
+  getComments: () => Promise<void>;
+  bodyWithRollup: (rollup: string) => string;
+}
+
+export abstract class Rollupable implements RollupableClass {
   _data: RollupableData | undefined;
-  _octokit: Octokit;
-  _repository: string;
-  _number: number;
-  _comments: Comment[] | undefined;
+  octokit: Octokit;
+  repository: string;
+  number: number;
+  comments: Comment[] | undefined;
+  owner: string;
+  repoName: string;
 
   public constructor(repository: string, number: number, octokit?: Octokit) {
-    this._repository = repository;
-    this._number = number;
+    this.repository = repository;
+    this.number = number;
+
+    const parts = repository.split("/");
+    this.owner = parts[0];
+    this.repoName = parts[1];
 
     if (octokit !== undefined && octokit !== null) {
-      this._octokit = octokit;
+      this.octokit = octokit;
       return this;
     }
 
     const OctokitWithPaginate = GitHub.plugin(paginateGraphql);
     const token = getInput("token", { required: true });
-    this._octokit = new OctokitWithPaginate(
-      getOctokitOptions(token),
-    ) as Octokit;
-  }
-
-  public get octokit(): Octokit {
-    return this._octokit;
-  }
-
-  public get repository(): string {
-    return this._repository;
-  }
-
-  public get number(): number {
-    return this._number;
-  }
-
-  public get repoName(): string {
-    return this.repository.split("/")[1];
-  }
-
-  public get owner(): string {
-    return this.repository.split("/")[0];
-  }
-
-  public get comments(): Comment[] | undefined {
-    return this._comments;
+    this.octokit = new OctokitWithPaginate(getOctokitOptions(token)) as Octokit;
   }
 
   public get body(): string | undefined {
@@ -93,7 +102,15 @@ export class Rollupable {
 
   // Note: _data.labels is Label[], but this.labels returns string[].
   public get labels(): string[] | undefined {
-    return this._data?.labels.map((label: Label) => label.name);
+    const labels = this._data?.labels;
+
+    if (labels === undefined) {
+      return;
+    }
+
+    return labels
+      .map((label: Label) => label.name)
+      .filter((item) => item !== undefined) as string[];
   }
 
   public get id() {
@@ -110,7 +127,12 @@ export class Rollupable {
     }
 
     for (const comment of this.comments) {
-      const parts = comment.body.split(headingRegex);
+      const parts = comment.body?.split(headingRegex);
+
+      if (parts === undefined) {
+        continue;
+      }
+
       for (const part of parts) {
         if (part === "") {
           continue;
@@ -154,7 +176,7 @@ export class Rollupable {
       md = this.commentsByHeadings();
     } else {
       for (const comment of this.comments) {
-        md += `From: ${comment.user.login}\n\n${comment.body}\n\n`;
+        md += `From: ${comment.user?.login}\n\n${comment.body}\n\n`;
       }
     }
 
@@ -182,22 +204,20 @@ export class Rollupable {
   public async uploadRollup() {
     await this.writeRollup();
     info("Uploading rollup as artifact");
-    const artifactClient = createArtifactClient();
-    const name = "rollup.docx";
-    const files = ["rollup.docx"];
-    const rootDirectory = ".";
-    const options = {
-      retentionDays: 7,
-    };
-    return await artifactClient.uploadArtifact(
-      name,
-      files,
-      rootDirectory,
-      options,
+    const artifact = new DefaultArtifactClient();
+
+    const { id } = await artifact.uploadArtifact(
+      "rollup.docx",
+      ["rollup.docx"],
+      ".",
+      {
+        retentionDays: 7,
+      },
     );
+
+    return id;
   }
 
-  // Artifact V2 should return the ID in the response. Until then...
   public getUploadedRollupUrl(id?: number) {
     const runID = process.env.GITHUB_RUN_ID;
 
@@ -240,6 +260,11 @@ export class Rollupable {
 
     let body: string;
     let rollup = this.rollup(downloadUrl);
+
+    if (rollup === undefined) {
+      return this.body;
+    }
+
     rollup = `<details><summary>${summary}</summary>\n\n${rollup}\n\n</details>`;
 
     if (this.body?.match(rollupRegex) != null) {

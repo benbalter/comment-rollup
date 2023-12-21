@@ -1,4 +1,3 @@
-import { type Rollupable } from "./rollupable";
 import { context as githubContext } from "@actions/github";
 import {
   getInput,
@@ -9,8 +8,9 @@ import {
   setFailed,
 } from "@actions/core";
 import "dotenv/config";
-import { Issue } from "./issue";
-import { Discussion } from "./discussion";
+import { Issue } from "./issue.js";
+import { Discussion } from "./discussion.js";
+import { type Rollupable } from "./rollupable.js";
 
 function parseContext() {
   const types = ["issue", "discussion"];
@@ -75,12 +75,8 @@ async function run(): Promise<void> {
 
   let uploadedRollupUrl: string | undefined;
   if (getInput("LINK_TO_DOC") === "true") {
-    const response = await rollupable.uploadRollup();
-    if (response.failedItems.length > 0) {
-      setFailed(`Failed to upload rollup: ${response.failedItems}`);
-    }
-
-    uploadedRollupUrl = rollupable.getUploadedRollupUrl();
+    const uploadId = await rollupable.uploadRollup();
+    uploadedRollupUrl = rollupable.getUploadedRollupUrl(uploadId);
     info(`Uploaded rollup to ${uploadedRollupUrl}`);
   } else {
     uploadedRollupUrl = undefined;

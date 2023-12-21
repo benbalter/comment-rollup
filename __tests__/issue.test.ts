@@ -1,7 +1,8 @@
 import { expect, test } from "@jest/globals";
 import { faker } from "@faker-js/faker";
 import { mockIssueData, octokit, sandbox, mockCommentData } from "./fixtures";
-import { Issue } from "../src/issue";
+// @ts-ignore
+import { Issue } from "../dist/issue";
 
 const repo = `${faker.company.buzzNoun()}/${faker.company.buzzNoun()}`;
 const number = faker.number.int();
@@ -15,8 +16,8 @@ const expectations = {
   number: number,
   body: issueData.body,
   title: issueData.title,
-  labels: issueData.labels.map((node: {name: string}) => node.name),
-}
+  labels: issueData.labels.map((node: { name: string }) => node.name),
+};
 type IssueKey = keyof Issue;
 
 test("returns Octokit", () => {
@@ -51,9 +52,7 @@ describe("getData", () => {
 describe("getComments", () => {
   beforeAll(async () => {
     sandbox.restore();
-    const comments = [
-      mockCommentData(), mockCommentData(), mockCommentData()
-    ]
+    const comments = [mockCommentData(), mockCommentData(), mockCommentData()];
     const commentUrl = `https://api.github.com/repos/${repo}/issues/${number}/comments`;
     sandbox.mock(
       {

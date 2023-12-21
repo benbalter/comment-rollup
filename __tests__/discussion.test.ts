@@ -1,6 +1,13 @@
 import { expect, test } from "@jest/globals";
+// @ts-ignore
 import { Discussion } from "../src/discussion";
-import { octokit, mockDiscussionData, mockGraphQL, mockCommentData, sandbox } from "./fixtures";
+import {
+  octokit,
+  mockDiscussionData,
+  mockGraphQL,
+  mockCommentData,
+  sandbox,
+} from "./fixtures";
 import { before } from "node:test";
 import fetchMock from "fetch-mock";
 
@@ -16,23 +23,25 @@ const expectations = {
   body: discussionData.body,
   title: discussionData.title,
   id: discussionData.id,
-  labels: discussionData.labels.nodes.map((node: {name: string}) => node.name),
-}
+  labels: discussionData.labels.nodes.map(
+    (node: { name: string }) => node.name,
+  ),
+};
 type DiscussionKey = keyof Discussion;
 
 test("returns Octokit", () => {
   expect(discussion.octokit).toBeDefined();
 });
 
-describe("getData", () => {  
-  beforeAll(() => { 
+describe("getData", () => {
+  beforeAll(() => {
     const data = {
-      data: {      
+      data: {
         repository: {
           discussion: discussionData,
         },
-      }
-   };
+      },
+    };
     mockGraphQL(data, "discussion", discussionData.number.toString());
     return discussion.getData();
   });
@@ -49,14 +58,12 @@ describe("getData", () => {
 });
 
 describe("getComments", () => {
-  beforeAll(async () => { 
+  beforeAll(async () => {
     sandbox.restore();
-    const comments = [
-      mockCommentData(), mockCommentData(), mockCommentData()
-    ]
+    const comments = [mockCommentData(), mockCommentData(), mockCommentData()];
 
     const commentData = {
-      data: {      
+      data: {
         repository: {
           discussion: {
             comments: {
@@ -64,25 +71,29 @@ describe("getComments", () => {
               pageInfo: {
                 hasNextPage: false,
                 endCursor: null,
-              }
-            }
+              },
+            },
           },
         },
       },
     };
-    mockGraphQL(commentData, "comments", "comments"); 
+    mockGraphQL(commentData, "comments", "comments");
 
     const data = {
-      data: {      
+      data: {
         repository: {
           discussion: discussionData,
         },
-      }
-   };
-    mockGraphQL(data, "discussionForComments", discussionData.number.toString());
-    
+      },
+    };
+    mockGraphQL(
+      data,
+      "discussionForComments",
+      discussionData.number.toString(),
+    );
+
     await discussion.getData();
-    return discussion.getComments();   
+    return discussion.getComments();
   });
 
   test("sets comments", () => {

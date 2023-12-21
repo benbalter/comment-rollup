@@ -1,9 +1,17 @@
 import { expect, test } from "@jest/globals";
-import { octokit, mockIssueData, mockGraphQL, mockCommentData, sandbox } from "./fixtures";
+import {
+  octokit,
+  mockIssueData,
+  mockGraphQL,
+  mockCommentData,
+  sandbox,
+} from "./fixtures";
 import { before } from "node:test";
 import fetchMock from "fetch-mock";
 import { faker } from "@faker-js/faker";
-import { Issue } from "../src/issue";
+// @ts-ignore
+import { Issue } from "../dist/issue";
+import { Comment } from "../src/rollupable";
 
 // Note: we're using an issue here, but this is shared logic
 const repo = `${faker.company.buzzNoun()}/${faker.company.buzzNoun()}`;
@@ -11,7 +19,7 @@ const number = faker.number.int();
 const issueData = mockIssueData();
 const issue = new Issue(repo, number, octokit);
 
-describe("Rollup", () => {  
+describe("Rollup", () => {
   beforeAll(() => {
     const url = `https://api.github.com/repos/${repo}/issues/${number}`;
     sandbox.mock(
@@ -35,8 +43,8 @@ describe("Rollup", () => {
 
   test("returns the rollup", () => {
     expect(issue.rollup).toBeDefined();
-    const expected = issue.comments?.map((comment) => {
-      return `From: ${comment.user.login}\n\n${comment.body}\n\n`;
+    const expected = issue.comments?.map((comment: Comment) => {
+      return `From: ${comment.user?.login}\n\n${comment.body}\n\n`;
     });
     expect(issue.rollup()).toEqual(expected);
   });
@@ -49,4 +57,3 @@ describe("Rollup", () => {
     expect(issue.docxRollup).toBeDefined();
   });
 });
-

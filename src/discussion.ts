@@ -1,5 +1,5 @@
 import { info, setOutput } from "@actions/core";
-import { Rollupable } from "./rollupable";
+import { Rollupable, type RollupableClass } from "./rollupable.js";
 import type { GraphQlQueryResponseData } from "@octokit/graphql";
 
 const dataQuery = `
@@ -50,7 +50,7 @@ const updateBodyMutation = `
   }
 `;
 
-export class Discussion extends Rollupable {
+export class Discussion extends Rollupable implements RollupableClass {
   private get octokitArgs() {
     return {
       owner: this.owner,
@@ -64,14 +64,16 @@ export class Discussion extends Rollupable {
     const response: GraphQlQueryResponseData =
       await this.octokit.graphql.paginate(commentQuery, this.octokitArgs);
     const comments = response.repository.discussion.comments.nodes;
-    this._comments = comments.map((comment: any) => {
-      return {
-        body: comment.body,
-        user: {
-          login: comment.author.login,
-        },
-      };
-    });
+    this.comments = comments.map(
+      (comment: { body: string; author: { login: string } }) => {
+        return {
+          body: comment.body,
+          user: {
+            login: comment.author.login,
+          },
+        };
+      },
+    );
   }
 
   public async getData() {

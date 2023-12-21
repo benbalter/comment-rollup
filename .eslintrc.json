@@ -1,5 +1,5 @@
 {
-  "plugins": ["@typescript-eslint", "github", "jest"],
+  "plugins": ["@typescript-eslint", "github"],
   "extends": ["standard-with-typescript", "plugin:github/recommended", "plugin:github/typescript"],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
@@ -11,7 +11,9 @@
     "i18n-text/no-en": "off",
     "camelcase": "warn",
     "@typescript-eslint/restrict-template-expressions": "warn",
-    "@typescript-eslint/no-floating-promises": "warn"
+    "@typescript-eslint/no-floating-promises": "warn",
+    "import/extensions": "warn",
+    "import/no-unresolved": "warn"
   },
   "env": {
     "node": true,
