@@ -15,4 +15,4 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           link_to_doc: true
-          label: weekly-roundup
+          label: weekly-rollup
