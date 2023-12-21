@@ -4,8 +4,9 @@ import { unified } from "unified";
 import HTMLtoDOCX from "html-to-docx";
 import { type Octokit } from "octokit";
 import { getInput } from "@actions/core";
-// @ts-expect-error Not sure why it can't find the type definitions
+// @ts-ignore - not sure why this doesn't work
 import { GitHub, getOctokitOptions } from "@actions/github/lib/utils";
+
 import { paginateGraphql } from "@octokit/plugin-paginate-graphql";
 import { writeFileSync } from "fs";
 import { type Buffer } from "buffer";

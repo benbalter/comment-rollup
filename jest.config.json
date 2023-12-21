@@ -8,5 +8,9 @@
   ],
   "testPathIgnorePatterns": [
     "/__tests__/fixtures.ts"
-  ]
+  ],
+  "moduleNameMapper": {
+    "./src/(.*?).js": "./$1.ts"
+  },
+  "verbose": true
 }

@@ -9,7 +9,6 @@ import {
 import { before } from "node:test";
 import fetchMock from "fetch-mock";
 import { faker } from "@faker-js/faker";
-// @ts-ignore
 import { Issue } from "../dist/issue";
 import { Comment } from "../src/rollupable";
 

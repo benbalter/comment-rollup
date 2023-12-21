@@ -1,22 +1,17 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Rollupable = void 0;
-const remark_html_1 = __importDefault(require("remark-html"));
-const remark_parse_1 = __importDefault(require("remark-parse"));
-const unified_1 = require("unified");
-const html_to_docx_1 = __importDefault(require("html-to-docx"));
-const core_1 = require("@actions/core");
-const utils_1 = require("@actions/github/lib/utils");
-const plugin_paginate_graphql_1 = require("@octokit/plugin-paginate-graphql");
-const fs_1 = require("fs");
-const artifact_1 = require("@actions/artifact");
-const console_1 = require("console");
+import remarkHtml from "remark-html";
+import remarkParse from "remark-parse";
+import { unified } from "unified";
+import HTMLtoDOCX from "html-to-docx";
+import { getInput } from "@actions/core";
+// @ts-ignore - not sure why this doesn't work
+import { GitHub, getOctokitOptions } from "@actions/github/lib/utils";
+import { paginateGraphql } from "@octokit/plugin-paginate-graphql";
+import { writeFileSync } from "fs";
+import { DefaultArtifactClient } from "@actions/artifact";
+import { info } from "console";
 const summary = "Comment rollup";
 const rollupRegex = new RegExp(`<details>\\s*<summary>\\s*${summary}\\s*</summary>[\\s\\S]*?</details>`, "im");
-class Rollupable {
+export class Rollupable {
     _data;
     octokit;
     repository;
@@ -34,9 +29,9 @@ class Rollupable {
             this.octokit = octokit;
             return this;
         }
-        const OctokitWithPaginate = utils_1.GitHub.plugin(plugin_paginate_graphql_1.paginateGraphql);
-        const token = (0, core_1.getInput)("token", { required: true });
-        this.octokit = new OctokitWithPaginate((0, utils_1.getOctokitOptions)(token));
+        const OctokitWithPaginate = GitHub.plugin(paginateGraphql);
+        const token = getInput("token", { required: true });
+        this.octokit = new OctokitWithPaginate(getOctokitOptions(token));
     }
     get body() {
         return this._data?.body;
@@ -50,7 +45,9 @@ class Rollupable {
         if (labels === undefined) {
             return;
         }
-        return labels.map((label) => label.name).filter(item => item !== undefined);
+        return labels
+            .map((label) => label.name)
+            .filter((item) => item !== undefined);
     }
     get id() {
         return this._data?.id;
@@ -98,7 +95,7 @@ class Rollupable {
         if (downloadUrl !== undefined) {
             md += `[Download rollup](${downloadUrl})\n\n`;
         }
-        if ((0, core_1.getInput)("group_by_headings") === "true") {
+        if (getInput("group_by_headings") === "true") {
             md = this.commentsByHeadings();
         }
         else {
@@ -109,24 +106,24 @@ class Rollupable {
         return md;
     }
     async htmlRollup() {
-        return await (0, unified_1.unified)()
-            .use(remark_parse_1.default)
-            .use(remark_html_1.default)
+        return await unified()
+            .use(remarkParse)
+            .use(remarkHtml)
             .process(this.rollup());
     }
     async docxRollup() {
         const html = await this.htmlRollup();
-        return await (0, html_to_docx_1.default)(String(html.toString()));
+        return await HTMLtoDOCX(String(html.toString()));
     }
     async writeRollup() {
-        (0, console_1.info)("Writing rollup to disk");
+        info("Writing rollup to disk");
         const docx = (await this.docxRollup());
-        (0, fs_1.writeFileSync)("rollup.docx", docx);
+        writeFileSync("rollup.docx", docx);
     }
     async uploadRollup() {
         await this.writeRollup();
-        (0, console_1.info)("Uploading rollup as artifact");
-        const artifact = new artifact_1.DefaultArtifactClient();
+        info("Uploading rollup as artifact");
+        const artifact = new DefaultArtifactClient();
         const { id } = await artifact.uploadArtifact("rollup.docx", ["rollup.docx"], ".", {
             retentionDays: 7,
         });
@@ -179,4 +176,3 @@ class Rollupable {
         return body;
     }
 }
-exports.Rollupable = Rollupable;

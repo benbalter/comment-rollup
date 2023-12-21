@@ -1,5 +1,5 @@
 import { info, setOutput } from "@actions/core";
-import { Rollupable, type RollupableClass } from "./rollupable.js";
+import { Rollupable, type RollupableClass } from "../src/rollupable.js";
 import type { GraphQlQueryResponseData } from "@octokit/graphql";
 
 const dataQuery = `

@@ -1,8 +1,5 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Discussion = void 0;
-const core_1 = require("@actions/core");
-const rollupable_js_1 = require("./rollupable.js");
+import { info, setOutput } from "@actions/core";
+import { Rollupable } from "../src/rollupable.js";
 const dataQuery = `
   query ($name: String!, $owner: String!, $number: Int!) {
     repository(name: $name, owner: $owner) {
@@ -49,7 +46,7 @@ const updateBodyMutation = `
     }
   }
 `;
-class Discussion extends rollupable_js_1.Rollupable {
+export class Discussion extends Rollupable {
     get octokitArgs() {
         return {
             owner: this.owner,
@@ -58,7 +55,7 @@ class Discussion extends rollupable_js_1.Rollupable {
         };
     }
     async getComments() {
-        (0, core_1.info)(`Getting comments for discussion ${this.number}`);
+        info(`Getting comments for discussion ${this.number}`);
         const response = await this.octokit.graphql.paginate(commentQuery, this.octokitArgs);
         const comments = response.repository.discussion.comments.nodes;
         this.comments = comments.map((comment) => {
@@ -71,7 +68,7 @@ class Discussion extends rollupable_js_1.Rollupable {
         });
     }
     async getData() {
-        (0, core_1.info)(`Getting data for discussion ${this.number}`);
+        info(`Getting data for discussion ${this.number}`);
         const response = await this.octokit.graphql(dataQuery, this.octokitArgs);
         this._data = response.repository.discussion;
         // backwards compatibility with the REST API response data used for Issues
@@ -80,11 +77,10 @@ class Discussion extends rollupable_js_1.Rollupable {
         }
     }
     async updateBody(downloadUrl) {
-        (0, core_1.setOutput)("Updating body to: ", this.bodyWithRollup(downloadUrl));
+        setOutput("Updating body to: ", this.bodyWithRollup(downloadUrl));
         await this.octokit.graphql(updateBodyMutation, {
             discussionId: this.id,
             body: this.bodyWithRollup(downloadUrl),
         });
     }
 }
-exports.Discussion = Discussion;

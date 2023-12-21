@@ -1,5 +1,4 @@
 import { expect, test } from "@jest/globals";
-// @ts-ignore
 import { Discussion } from "../src/discussion";
 import {
   octokit,
