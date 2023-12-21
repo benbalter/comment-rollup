@@ -35,7 +35,8 @@
     "remark-html": "^16.0.1",
     "remark-parse": "^11.0.0",
     "unified": "^11.0.4",
-    "vfile": "^6.0.1"
+    "vfile": "^6.0.1",
+    "xmlbuilder2": "^3.1.1"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.23.6",
@@ -57,6 +58,12 @@
     "prettier": "3.1.1",
     "ts-jest": "^29.1.1",
     "typescript": ">=3.3.1, <4.9.0"
+  },
+  "resolutions": {
+    "xmlbuilder2": "^3.0.2"
+  },
+  "overrides": {
+    "xmlbuilder2": "^3.1.1"
   },
   "type": "module"
 }

@@ -3,7 +3,7 @@ import remarkParse from "remark-parse";
 import { unified } from "unified";
 import HTMLtoDOCX from "html-to-docx";
 import { type Octokit } from "octokit";
-import { getInput } from "@actions/core";
+import { getInput, setFailed } from "@actions/core";
 // @ts-ignore - not sure why this doesn't work
 import { GitHub, getOctokitOptions } from "@actions/github/lib/utils";
 
@@ -56,7 +56,7 @@ export interface RollupableClass {
   commentsByHeadings: () => string;
   rollup: (downloadUrl?: string) => string | undefined;
   htmlRollup: () => Promise<VFile>;
-  docxRollup: () => Promise<Buffer | Blob>;
+  docxRollup: () => Promise<Buffer | Blob | undefined>;
   writeRollup: () => Promise<void>;
   uploadRollup: () => Promise<number | undefined>;
   getUploadedRollupUrl: (id?: number) => string | undefined;
@@ -193,7 +193,11 @@ export abstract class Rollupable implements RollupableClass {
 
   public async docxRollup() {
     const html = await this.htmlRollup();
-    return await HTMLtoDOCX(String(html.toString()));
+    if (html === undefined) {
+      setFailed("Could not convert rollup to HTML");
+      return;
+    }
+    return await HTMLtoDOCX(html.toString());
   }
 
   public async writeRollup() {

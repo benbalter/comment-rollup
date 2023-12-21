@@ -2,7 +2,7 @@ import remarkHtml from "remark-html";
 import remarkParse from "remark-parse";
 import { unified } from "unified";
 import HTMLtoDOCX from "html-to-docx";
-import { getInput } from "@actions/core";
+import { getInput, setFailed } from "@actions/core";
 // @ts-ignore - not sure why this doesn't work
 import { GitHub, getOctokitOptions } from "@actions/github/lib/utils";
 import { paginateGraphql } from "@octokit/plugin-paginate-graphql";
@@ -113,7 +113,11 @@ export class Rollupable {
     }
     async docxRollup() {
         const html = await this.htmlRollup();
-        return await HTMLtoDOCX(String(html.toString()));
+        if (html === undefined) {
+            setFailed("Could not convert rollup to HTML");
+            return;
+        }
+        return await HTMLtoDOCX(html.toString());
     }
     async writeRollup() {
         info("Writing rollup to disk");

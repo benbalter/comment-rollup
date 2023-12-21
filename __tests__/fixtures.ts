@@ -77,8 +77,21 @@ export function mockDiscussionData(overrides?: Record<string, any>) {
 
 export function mockCommentData(overrides?: Record<string, any>) {
   const login = faker.internet.userName();
+  const body = `
+    ## Heading 1
+
+    * ${faker.lorem.sentence()}
+    * ${faker.lorem.sentence()}
+    * ${faker.lorem.sentence()}
+    
+    ## Heading 2
+
+    * ${faker.lorem.sentence()}
+    * ${faker.lorem.sentence()}
+    * ${faker.lorem.sentence()}
+`;
   const defaults = {
-    body: faker.lorem.paragraphs(),
+    body: body,
     author: {
       login,
     },
