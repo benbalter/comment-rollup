@@ -4,7 +4,6 @@ import { unified } from "unified";
 import HTMLtoDOCX from "html-to-docx";
 import { type Octokit } from "octokit";
 import { getInput, setFailed } from "@actions/core";
-// @ts-ignore - not sure why this doesn't work
 import { GitHub, getOctokitOptions } from "@actions/github/lib/utils";
 
 import { paginateGraphql } from "@octokit/plugin-paginate-graphql";

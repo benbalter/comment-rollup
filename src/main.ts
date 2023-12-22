@@ -8,9 +8,9 @@ import {
   setFailed,
 } from "@actions/core";
 import "dotenv/config";
-import { Issue } from "./issue.js";
-import { Discussion } from "./discussion.js";
-import { type Rollupable } from "./rollupable.js";
+import { Issue } from "./issue";
+import { Discussion } from "./discussion";
+import { type Rollupable } from "./rollupable";
 
 function parseContext() {
   const types = ["issue", "discussion"];

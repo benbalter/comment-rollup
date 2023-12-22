@@ -1,9 +1,5 @@
 import { info, setOutput } from "@actions/core";
-import {
-  Rollupable,
-  type RollupableClass,
-  type Comment,
-} from "./rollupable.js";
+import { Rollupable, type RollupableClass, type Comment } from "./rollupable";
 
 export class Issue extends Rollupable implements RollupableClass {
   private get octokitArgs() {

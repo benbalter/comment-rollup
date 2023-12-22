@@ -1,7 +1,7 @@
 import { expect, test } from "@jest/globals";
 import { faker } from "@faker-js/faker";
 import { mockIssueData, octokit, sandbox, mockCommentData } from "./fixtures";
-import { Issue } from "../dist/issue";
+import { Issue } from "../src/issue";
 
 const repo = `${faker.company.buzzNoun()}/${faker.company.buzzNoun()}`;
 const number = faker.number.int();

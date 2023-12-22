@@ -10,7 +10,7 @@ import {
 import { before } from "node:test";
 import fetchMock from "fetch-mock";
 import { faker } from "@faker-js/faker";
-import { Issue } from "../dist/issue";
+import { Issue } from "../src/issue";
 import { Comment } from "../src/rollupable";
 import { Discussion } from "../src/discussion";
 import { existsSync } from "node:fs";
@@ -85,6 +85,10 @@ describe("Rollup", () => {
   for (const [type, mock] of Object.entries(mocks)) {
     describe(type, () => {
       test("returns true if label exists", () => {
+        expect(mock.labels).toBeDefined();
+        if (mock.labels === undefined) {
+          return;
+        }
         expect(mock.hasLabel(mock.labels[0])).toBe(true);
       });
 

@@ -1,9 +1,17 @@
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 import remarkHtml from "remark-html";
 import remarkParse from "remark-parse";
 import { unified } from "unified";
 import HTMLtoDOCX from "html-to-docx";
 import { getInput, setFailed } from "@actions/core";
-// @ts-ignore - not sure why this doesn't work
 import { GitHub, getOctokitOptions } from "@actions/github/lib/utils";
 import { paginateGraphql } from "@octokit/plugin-paginate-graphql";
 import { writeFileSync } from "fs";
@@ -12,13 +20,6 @@ import { info } from "console";
 const summary = "Comment rollup";
 const rollupRegex = new RegExp(`<details>\\s*<summary>\\s*${summary}\\s*</summary>[\\s\\S]*?</details>`, "im");
 export class Rollupable {
-    _data;
-    octokit;
-    repository;
-    number;
-    comments;
-    owner;
-    repoName;
     constructor(repository, number, octokit) {
         this.repository = repository;
         this.number = number;
@@ -34,14 +35,17 @@ export class Rollupable {
         this.octokit = new OctokitWithPaginate(getOctokitOptions(token));
     }
     get body() {
-        return this._data?.body;
+        var _a;
+        return (_a = this._data) === null || _a === void 0 ? void 0 : _a.body;
     }
     get title() {
-        return this._data?.title;
+        var _a;
+        return (_a = this._data) === null || _a === void 0 ? void 0 : _a.title;
     }
     // Note: _data.labels is Label[], but this.labels returns string[].
     get labels() {
-        const labels = this._data?.labels;
+        var _a;
+        const labels = (_a = this._data) === null || _a === void 0 ? void 0 : _a.labels;
         if (labels === undefined) {
             return;
         }
@@ -50,9 +54,11 @@ export class Rollupable {
             .filter((item) => item !== undefined);
     }
     get id() {
-        return this._data?.id;
+        var _a;
+        return (_a = this._data) === null || _a === void 0 ? void 0 : _a.id;
     }
     commentsByHeadings() {
+        var _a;
         const headings = {};
         let currentHeading = "";
         const headingRegex = /^(#+ .*?)$/m;
@@ -60,7 +66,7 @@ export class Rollupable {
             return "";
         }
         for (const comment of this.comments) {
-            const parts = comment.body?.split(headingRegex);
+            const parts = (_a = comment.body) === null || _a === void 0 ? void 0 : _a.split(headingRegex);
             if (parts === undefined) {
                 continue;
             }
@@ -88,6 +94,7 @@ export class Rollupable {
         return output;
     }
     rollup(downloadUrl) {
+        var _a;
         let md = "";
         if (this.comments === undefined) {
             return;
@@ -100,38 +107,46 @@ export class Rollupable {
         }
         else {
             for (const comment of this.comments) {
-                md += `From: ${comment.user?.login}\n\n${comment.body}\n\n`;
+                md += `From: ${(_a = comment.user) === null || _a === void 0 ? void 0 : _a.login}\n\n${comment.body}\n\n`;
             }
         }
         return md;
     }
-    async htmlRollup() {
-        return await unified()
-            .use(remarkParse)
-            .use(remarkHtml)
-            .process(this.rollup());
-    }
-    async docxRollup() {
-        const html = await this.htmlRollup();
-        if (html === undefined) {
-            setFailed("Could not convert rollup to HTML");
-            return;
-        }
-        return await HTMLtoDOCX(html.toString());
-    }
-    async writeRollup() {
-        info("Writing rollup to disk");
-        const docx = (await this.docxRollup());
-        writeFileSync("rollup.docx", docx);
-    }
-    async uploadRollup() {
-        await this.writeRollup();
-        info("Uploading rollup as artifact");
-        const artifact = new DefaultArtifactClient();
-        const { id } = await artifact.uploadArtifact("rollup.docx", ["rollup.docx"], ".", {
-            retentionDays: 7,
+    htmlRollup() {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield unified()
+                .use(remarkParse)
+                .use(remarkHtml)
+                .process(this.rollup());
         });
-        return id;
+    }
+    docxRollup() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const html = yield this.htmlRollup();
+            if (html === undefined) {
+                setFailed("Could not convert rollup to HTML");
+                return;
+            }
+            return yield HTMLtoDOCX(html.toString());
+        });
+    }
+    writeRollup() {
+        return __awaiter(this, void 0, void 0, function* () {
+            info("Writing rollup to disk");
+            const docx = (yield this.docxRollup());
+            writeFileSync("rollup.docx", docx);
+        });
+    }
+    uploadRollup() {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield this.writeRollup();
+            info("Uploading rollup as artifact");
+            const artifact = new DefaultArtifactClient();
+            const { id } = yield artifact.uploadArtifact("rollup.docx", ["rollup.docx"], ".", {
+                retentionDays: 7,
+            });
+            return id;
+        });
     }
     getUploadedRollupUrl(id) {
         const runID = process.env.GITHUB_RUN_ID;
@@ -147,21 +162,29 @@ export class Rollupable {
     }
     // Returns true if the issue has the given label
     hasLabel(label) {
+        var _a;
         if (this.labels === undefined) {
             return false;
         }
-        return this.labels?.some((candidate) => candidate === label);
+        return (_a = this.labels) === null || _a === void 0 ? void 0 : _a.some((candidate) => candidate === label);
     }
-    async getData() {
-        throw new Error("Not implemented");
+    getData() {
+        return __awaiter(this, void 0, void 0, function* () {
+            throw new Error("Not implemented");
+        });
     }
-    async getComments() {
-        throw new Error("Not implemented");
+    getComments() {
+        return __awaiter(this, void 0, void 0, function* () {
+            throw new Error("Not implemented");
+        });
     }
-    async updateBody(downloadUrl) {
-        throw new Error("Not implemented");
+    updateBody(downloadUrl) {
+        return __awaiter(this, void 0, void 0, function* () {
+            throw new Error("Not implemented");
+        });
     }
     bodyWithRollup(downloadUrl) {
+        var _a;
         if (this.body === undefined) {
             throw new Error("Rollupable body is undefined");
         }
@@ -171,7 +194,7 @@ export class Rollupable {
             return this.body;
         }
         rollup = `<details><summary>${summary}</summary>\n\n${rollup}\n\n</details>`;
-        if (this.body?.match(rollupRegex) != null) {
+        if (((_a = this.body) === null || _a === void 0 ? void 0 : _a.match(rollupRegex)) != null) {
             body = this.body.replace(rollupRegex, rollup);
         }
         else {
