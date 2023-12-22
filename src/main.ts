@@ -1,87 +1,95 @@
-import { context as github_context, getOctokit } from "@actions/github";
+import { type Rollupable } from "./rollupable";
+import { context as githubContext } from "@actions/github";
 import {
   getInput,
   info,
+  debug,
   warning,
-  setOutput,
   notice,
   setFailed,
 } from "@actions/core";
 import "dotenv/config";
+import { Issue } from "./issue";
+import { Discussion } from "./discussion";
 
-const summary = "Comment rollup";
+function parseContext() {
+  const types = ["issue", "discussion"];
+  let number: number | undefined;
+  let rollupableType = "";
 
-function hasLabel(
-  labels: (string | { name?: string })[],
-  label: string
-): boolean {
-  let labelArray: { name?: string }[];
-
-  if (typeof labels === "string") {
-    labelArray = Array({ name: labels });
-  } else {
-    labelArray = <{ name?: string }[]>labels;
+  if (getInput("type") !== "" && getInput("number") !== "") {
+    number = parseInt(getInput("number"), 10);
+    rollupableType = getInput("type");
+  } else if (githubContext.payload.issue !== undefined) {
+    number = githubContext.payload.issue?.number;
+    rollupableType = "issue";
+  } else if (githubContext.payload.discussion !== undefined) {
+    number = githubContext.payload.discussion?.number;
+    rollupableType = "discussion";
   }
 
-  return labelArray.some((candidate) => candidate.name === label);
-}
-
-function issueBody(
-  issue: { body?: string | null },
-  comments: { body?: string }[]
-): string {
-  const rollupRegex = new RegExp(
-    `<details>\\s*<summary>\\s*${summary}\\s*</summary>[\\s\\S]*?</details>`,
-    "im"
-  );
-  let body: string;
-  let rollup = comments.map((comment) => comment.body).join("\n\n");
-  rollup = `<details><summary>${summary}</summary>\n\n${rollup}\n\n</details>`;
-
-  if (issue.body?.match(rollupRegex)) {
-    body = issue.body.replace(rollupRegex, rollup);
-  } else {
-    body = `${issue.body}\n\n${rollup}`;
+  if (!types.includes(rollupableType)) {
+    throw new Error(`Unknown rollupable type ${rollupableType}`);
   }
 
-  return body;
+  if (number === undefined) {
+    throw new Error("No issue or discussion found in payload");
+  }
+
+  return { number, rollupableType };
 }
 
 async function run(): Promise<void> {
-  const token = getInput("token", { required: true });
   const label = getInput("label");
-  const issueNumber = parseInt(
-    getInput("issue_number", { required: true }),
-    10
-  );
+  const { number, rollupableType } = parseContext();
+  const repo = `${githubContext.repo.owner}/${githubContext.repo.repo}`;
+  let rollupable: Rollupable;
 
-  const context = github_context;
-  const octokit = getOctokit(token);
-  const octokitArgs = {
-    ...context.repo,
-    issue_number: issueNumber,
-  };
+  info(`Rolling up ${rollupableType} #${number} in ${repo}`);
 
-  const { data: issue } = await octokit.rest.issues.get(octokitArgs);
+  if (rollupableType === "issue") {
+    rollupable = new Issue(repo, number);
+  } else if (rollupableType === "discussion") {
+    rollupable = new Discussion(repo, number);
+  } else {
+    throw new Error(`Unknown rollupable type ${rollupableType}`);
+  }
 
-  if (label && !hasLabel(issue.labels, label)) {
-    info(`Issue ${issue.title} does not have label ${label}. Skipping.`);
+  await rollupable.getData();
+
+  if (label !== undefined && label !== "" && !rollupable.hasLabel(label)) {
+    info(
+      `${rollupableType} ${rollupable.title} does not have label ${label}. Skipping.`,
+    );
+    debug(`Labels: ${rollupable.labels}`);
     return;
   }
 
-  const { data: comments } = await octokit.rest.issues.listComments(
-    octokitArgs
-  );
-
-  if (comments.length === 0) {
-    warning(`Issue ${issue.title} does not have any comments. Skipping.`);
+  await rollupable.getComments();
+  if (rollupable.comments?.length === 0) {
+    warning(
+      `${rollupableType} ${rollupable.title} does not have any comments. Skipping.`,
+    );
     return;
   }
 
-  const body = issueBody(issue, comments);
-  setOutput("body", body);
-  octokit.rest.issues.update({ ...octokitArgs, body });
-  notice(`Rolled up ${comments.length} comments to issue ${issue.title}`);
+  let uploadedRollupUrl: string | undefined;
+  if (getInput("LINK_TO_DOC") === "true") {
+    const response = await rollupable.uploadRollup();
+    if (response.failedItems.length > 0) {
+      setFailed(`Failed to upload rollup: ${response.failedItems}`);
+    }
+
+    uploadedRollupUrl = rollupable.getUploadedRollupUrl();
+    info(`Uploaded rollup to ${uploadedRollupUrl}`);
+  } else {
+    uploadedRollupUrl = undefined;
+  }
+
+  await rollupable.updateBody(uploadedRollupUrl);
+  notice(
+    `Rolled up ${rollupable.comments?.length} comments to ${rollupableType} ${rollupable.title}`,
+  );
 }
 
 try {
@@ -90,4 +98,4 @@ try {
   if (error instanceof Error) setFailed(error.message);
 }
 
-export { hasLabel, issueBody, run };
+export { run };
