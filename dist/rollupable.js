@@ -157,7 +157,7 @@ export class Rollupable {
             return `https://github.com/${this.owner}/${this.repoName}/actions/runs/${runID}#:~:text=rollup.docx`;
         }
         else {
-            return `https://github.com/${this.owner}/${this.repoName}/suites/${runID}/artifacts/${id}`;
+            return `https://github.com/${this.owner}/${this.repoName}/actions/runs/${runID}/artifacts/${id}`;
         }
     }
     // Returns true if the issue has the given label

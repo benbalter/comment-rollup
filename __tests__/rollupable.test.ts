@@ -135,7 +135,7 @@ describe("Rollup", () => {
         process.env.GITHUB_RUN_ID = "123";
         const url = await mock.getUploadedRollupUrl(456);
         expect(url).toEqual(
-          `https://github.com/${mock.owner}/${mock.repoName}/suites/123/artifacts/456`,
+          `https://github.com/${mock.owner}/${mock.repoName}/actions/runs/123/artifacts/456`,
         );
       });
 
