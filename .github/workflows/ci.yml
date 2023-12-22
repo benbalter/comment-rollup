@@ -27,3 +27,5 @@ jobs:
         with:
           number: 3
           token: ${{ secrets.GITHUB_TOKEN }}
+          link_to_doc: true
+          
