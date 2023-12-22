@@ -1,4 +1,3 @@
-"use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -8,10 +7,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Discussion = void 0;
-const core_1 = require("@actions/core");
-const rollupable_1 = require("./rollupable");
+import { info, setOutput } from "@actions/core";
+import { Rollupable } from "./rollupable";
 const dataQuery = `
   query ($name: String!, $owner: String!, $number: Int!) {
     repository(name: $name, owner: $owner) {
@@ -58,7 +55,7 @@ const updateBodyMutation = `
     }
   }
 `;
-class Discussion extends rollupable_1.Rollupable {
+export class Discussion extends Rollupable {
     get octokitArgs() {
         return {
             owner: this.owner,
@@ -68,10 +65,10 @@ class Discussion extends rollupable_1.Rollupable {
     }
     getComments() {
         return __awaiter(this, void 0, void 0, function* () {
-            (0, core_1.info)(`Getting comments for discussion ${this.number}`);
+            info(`Getting comments for discussion ${this.number}`);
             const response = yield this.octokit.graphql.paginate(commentQuery, this.octokitArgs);
             const comments = response.repository.discussion.comments.nodes;
-            this._comments = comments.map((comment) => {
+            this.comments = comments.map((comment) => {
                 return {
                     body: comment.body,
                     user: {
@@ -83,7 +80,7 @@ class Discussion extends rollupable_1.Rollupable {
     }
     getData() {
         return __awaiter(this, void 0, void 0, function* () {
-            (0, core_1.info)(`Getting data for discussion ${this.number}`);
+            info(`Getting data for discussion ${this.number}`);
             const response = yield this.octokit.graphql(dataQuery, this.octokitArgs);
             this._data = response.repository.discussion;
             // backwards compatibility with the REST API response data used for Issues
@@ -94,7 +91,7 @@ class Discussion extends rollupable_1.Rollupable {
     }
     updateBody(downloadUrl) {
         return __awaiter(this, void 0, void 0, function* () {
-            (0, core_1.setOutput)("Updating body to: ", this.bodyWithRollup(downloadUrl));
+            setOutput("Updating body to: ", this.bodyWithRollup(downloadUrl));
             yield this.octokit.graphql(updateBodyMutation, {
                 discussionId: this.id,
                 body: this.bodyWithRollup(downloadUrl),
@@ -102,4 +99,3 @@ class Discussion extends rollupable_1.Rollupable {
         });
     }
 }
-exports.Discussion = Discussion;
