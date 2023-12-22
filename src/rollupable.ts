@@ -232,7 +232,7 @@ export abstract class Rollupable implements RollupableClass {
     if (id === undefined) {
       return `https://github.com/${this.owner}/${this.repoName}/actions/runs/${runID}#:~:text=rollup.docx`;
     } else {
-      return `https://github.com/${this.owner}/${this.repoName}/suites/${runID}/artifacts/${id}`;
+      return `https://github.com/${this.owner}/${this.repoName}/actions/runs/${runID}/artifacts/${id}`;
     }
   }
 
