@@ -1,4 +1,3 @@
-"use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -8,28 +7,26 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.run = void 0;
-const github_1 = require("@actions/github");
-const core_1 = require("@actions/core");
-require("dotenv/config");
-const issue_1 = require("./issue");
-const discussion_1 = require("./discussion");
+import { context as githubContext } from "@actions/github";
+import { getInput, info, debug, warning, notice, setFailed, } from "@actions/core";
+import "dotenv/config";
+import { Issue } from "./issue";
+import { Discussion } from "./discussion";
 function parseContext() {
     var _a, _b;
     const types = ["issue", "discussion"];
     let number;
     let rollupableType = "";
-    if ((0, core_1.getInput)("type") !== "" && (0, core_1.getInput)("number") !== "") {
-        number = parseInt((0, core_1.getInput)("number"), 10);
-        rollupableType = (0, core_1.getInput)("type");
+    if (getInput("type") !== "" && getInput("number") !== "") {
+        number = parseInt(getInput("number"), 10);
+        rollupableType = getInput("type");
     }
-    else if (github_1.context.payload.issue !== undefined) {
-        number = (_a = github_1.context.payload.issue) === null || _a === void 0 ? void 0 : _a.number;
+    else if (githubContext.payload.issue !== undefined) {
+        number = (_a = githubContext.payload.issue) === null || _a === void 0 ? void 0 : _a.number;
         rollupableType = "issue";
     }
-    else if (github_1.context.payload.discussion !== undefined) {
-        number = (_b = github_1.context.payload.discussion) === null || _b === void 0 ? void 0 : _b.number;
+    else if (githubContext.payload.discussion !== undefined) {
+        number = (_b = githubContext.payload.discussion) === null || _b === void 0 ? void 0 : _b.number;
         rollupableType = "discussion";
     }
     if (!types.includes(rollupableType)) {
@@ -43,52 +40,49 @@ function parseContext() {
 function run() {
     var _a, _b;
     return __awaiter(this, void 0, void 0, function* () {
-        const label = (0, core_1.getInput)("label");
+        const label = getInput("label");
         const { number, rollupableType } = parseContext();
-        const repo = `${github_1.context.repo.owner}/${github_1.context.repo.repo}`;
+        const repo = `${githubContext.repo.owner}/${githubContext.repo.repo}`;
         let rollupable;
-        (0, core_1.info)(`Rolling up ${rollupableType} #${number} in ${repo}`);
+        info(`Rolling up ${rollupableType} #${number} in ${repo}`);
         if (rollupableType === "issue") {
-            rollupable = new issue_1.Issue(repo, number);
+            rollupable = new Issue(repo, number);
         }
         else if (rollupableType === "discussion") {
-            rollupable = new discussion_1.Discussion(repo, number);
+            rollupable = new Discussion(repo, number);
         }
         else {
             throw new Error(`Unknown rollupable type ${rollupableType}`);
         }
         yield rollupable.getData();
         if (label !== undefined && label !== "" && !rollupable.hasLabel(label)) {
-            (0, core_1.info)(`${rollupableType} ${rollupable.title} does not have label ${label}. Skipping.`);
-            (0, core_1.debug)(`Labels: ${rollupable.labels}`);
+            info(`${rollupableType} ${rollupable.title} does not have label ${label}. Skipping.`);
+            debug(`Labels: ${rollupable.labels}`);
             return;
         }
         yield rollupable.getComments();
         if (((_a = rollupable.comments) === null || _a === void 0 ? void 0 : _a.length) === 0) {
-            (0, core_1.warning)(`${rollupableType} ${rollupable.title} does not have any comments. Skipping.`);
+            warning(`${rollupableType} ${rollupable.title} does not have any comments. Skipping.`);
             return;
         }
         let uploadedRollupUrl;
-        if ((0, core_1.getInput)("LINK_TO_DOC") === "true") {
-            const response = yield rollupable.uploadRollup();
-            if (response.failedItems.length > 0) {
-                (0, core_1.setFailed)(`Failed to upload rollup: ${response.failedItems}`);
-            }
-            uploadedRollupUrl = rollupable.getUploadedRollupUrl();
-            (0, core_1.info)(`Uploaded rollup to ${uploadedRollupUrl}`);
+        if (getInput("LINK_TO_DOC") === "true") {
+            const uploadId = yield rollupable.uploadRollup();
+            uploadedRollupUrl = rollupable.getUploadedRollupUrl(uploadId);
+            info(`Uploaded rollup to ${uploadedRollupUrl}`);
         }
         else {
             uploadedRollupUrl = undefined;
         }
         yield rollupable.updateBody(uploadedRollupUrl);
-        (0, core_1.notice)(`Rolled up ${(_b = rollupable.comments) === null || _b === void 0 ? void 0 : _b.length} comments to ${rollupableType} ${rollupable.title}`);
+        notice(`Rolled up ${(_b = rollupable.comments) === null || _b === void 0 ? void 0 : _b.length} comments to ${rollupableType} ${rollupable.title}`);
     });
 }
-exports.run = run;
 try {
     run();
 }
 catch (error) {
     if (error instanceof Error)
-        (0, core_1.setFailed)(error.message);
+        setFailed(error.message);
 }
+export { run };

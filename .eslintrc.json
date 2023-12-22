@@ -3,7 +3,7 @@
   "extends": ["standard-with-typescript", "plugin:github/recommended", "plugin:github/typescript"],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
-    "ecmaVersion": 9,
+    "ecmaVersion": "latest",
     "sourceType": "module",
     "project": "./tsconfig.json"
   },
@@ -11,10 +11,14 @@
     "i18n-text/no-en": "off",
     "camelcase": "warn",
     "@typescript-eslint/restrict-template-expressions": "warn",
-    "@typescript-eslint/no-floating-promises": "warn"
+    "@typescript-eslint/no-floating-promises": "warn",
+    "@typescript-eslint/ban-ts-comment": "warn",
+    "@typescript-eslint/prefer-ts-expect-error": "off",
+    "import/extensions": "warn",
+    "import/no-unresolved": "warn"
   },
   "env": {
     "node": true,
-    "es6": true
+    "es2021": true
   }
 }

@@ -11,6 +11,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3.1.0
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          cache: 'npm'
       - run: npm install
       - run: npm run all
  
@@ -20,5 +25,7 @@ jobs:
       - uses: actions/checkout@v3.1.0
       - uses: ./
         with:
-          issue_number: 3
+          number: 3
           token: ${{ secrets.GITHUB_TOKEN }}
+          link_to_doc: true
+          
