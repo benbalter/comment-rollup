@@ -39,7 +39,7 @@
     "xmlbuilder2": "^3.1.1"
   },
   "devDependencies": {
-    "@babel/preset-env": "^7.23.6",
+    "@babel/preset-env": "^7.23.7",
     "@babel/preset-typescript": "^7.23.3",
     "@faker-js/faker": "^8.3.1",
     "@octokit/types": "^12.4.0",
