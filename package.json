@@ -39,14 +39,14 @@
     "xmlbuilder2": "^3.1.1"
   },
   "devDependencies": {
-    "@babel/preset-env": "^7.23.6",
+    "@babel/preset-env": "^7.23.7",
     "@babel/preset-typescript": "^7.23.3",
     "@faker-js/faker": "^8.3.1",
     "@octokit/types": "^12.4.0",
     "@types/jest": "^29.5.11",
-    "@types/node": "^20.10.6",
-    "@typescript-eslint/eslint-plugin": "^6.15.0",
-    "@typescript-eslint/parser": "^6.15.0",
+    "@types/node": "^20.10.7",
+    "@typescript-eslint/eslint-plugin": "^6.18.0",
+    "@typescript-eslint/parser": "^6.18.0",
     "@vercel/ncc": "^0.38.1",
     "babel-jest": "^29.7.0",
     "eslint": "^8.56.0",
@@ -57,7 +57,7 @@
     "js-yaml": "^4.1.0",
     "prettier": "3.1.1",
     "ts-jest": "^29.1.1",
-    "typescript": ">=3.3.1, <4.9.0"
+    "typescript": ">=3.3.1, <5.4.0"
   },
   "resolutions": {
     "xmlbuilder2": "^3.0.2"
