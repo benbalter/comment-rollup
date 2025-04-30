@@ -12,7 +12,7 @@ const expectations = {
   repository: repo,
   repoName: repo.split("/")[1],
   owner: repo.split("/")[0],
-  number: number,
+  number,
   body: issueData.body,
   title: issueData.title,
   labels: issueData.labels.map((node: { name: string }) => node.name),
@@ -24,17 +24,17 @@ test("returns Octokit", () => {
 });
 
 describe("getData", () => {
-  beforeAll(() => {
+  beforeAll(async () => {
     const url = `https://api.github.com/repos/${repo}/issues/${number}`;
     sandbox.mock(
       {
         method: "GET",
-        url: url,
+        url,
       },
       issueData,
       { sendAsJson: true },
     );
-    return issue.getData();
+    await issue.getData();
   });
 
   test("sets data", () => {
@@ -67,18 +67,18 @@ describe("getComments", () => {
     sandbox.mock(
       {
         method: "GET",
-        url: url,
+        url,
       },
       issueData,
       { sendAsJson: true },
     );
-    return issue.getData();
+    await issue.getData();
   });
 
   test("sets comments", () => {
     expect(issue.comments).toBeDefined();
 
-    if (issue.comments) {
+    if (issue.comments !== null && issue.comments !== undefined) {
       expect(issue.comments.length).toEqual(3);
     }
   });

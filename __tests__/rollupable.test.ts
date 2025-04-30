@@ -7,11 +7,9 @@ import {
   sandbox,
   mockDiscussionData,
 } from "./fixtures";
-import { before } from "node:test";
-import fetchMock from "fetch-mock";
 import { faker } from "@faker-js/faker";
 import { Issue } from "../src/issue";
-import { Comment } from "../src/rollupable";
+import { type Comment } from "../src/rollupable";
 import { Discussion } from "../src/discussion";
 import { existsSync } from "node:fs";
 
@@ -24,8 +22,8 @@ const discussion = new Discussion(repo, discussionData.number, octokit);
 const comments = [mockCommentData(), mockCommentData(), mockCommentData()];
 
 const mocks = {
-  issue: issue,
-  discussion: discussion,
+  issue,
+  discussion,
 };
 
 describe("Rollup", () => {
@@ -34,7 +32,7 @@ describe("Rollup", () => {
     sandbox.mock(
       {
         method: "GET",
-        url: url,
+        url,
       },
       issueData,
       { sendAsJson: true },
@@ -56,7 +54,7 @@ describe("Rollup", () => {
         },
       },
     };
-    await mockGraphQL(commentData, "comments", "comments");
+    mockGraphQL(commentData, "comments", "comments");
     await discussion.getComments();
 
     const data = {
@@ -78,7 +76,7 @@ describe("Rollup", () => {
       comments,
       { sendAsJson: true },
     );
-    return issue.getComments();
+    await issue.getComments();
   });
 
   // run tests for both issue and discussion
@@ -133,7 +131,7 @@ describe("Rollup", () => {
 
       test("gets uploaded rollup URL", async () => {
         process.env.GITHUB_RUN_ID = "123";
-        const url = await mock.getUploadedRollupUrl(456);
+        const url = mock.getUploadedRollupUrl(456);
         expect(url).toEqual(
           `https://github.com/${mock.owner}/${mock.repoName}/actions/runs/123/artifacts/456`,
         );

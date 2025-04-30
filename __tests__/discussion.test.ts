@@ -7,8 +7,6 @@ import {
   mockCommentData,
   sandbox,
 } from "./fixtures";
-import { before } from "node:test";
-import fetchMock from "fetch-mock";
 
 const discussionData = mockDiscussionData();
 const repo = `${discussionData.owner.login}/${discussionData.repo.name}`;
@@ -33,7 +31,7 @@ test("returns Octokit", () => {
 });
 
 describe("getData", () => {
-  beforeAll(() => {
+  beforeAll(async () => {
     const data = {
       data: {
         repository: {
@@ -42,7 +40,7 @@ describe("getData", () => {
       },
     };
     mockGraphQL(data, "discussion", discussionData.number.toString());
-    return discussion.getData();
+    await discussion.getData();
   });
 
   test("sets data", async () => {
@@ -92,13 +90,13 @@ describe("getComments", () => {
     );
 
     await discussion.getData();
-    return discussion.getComments();
+    await discussion.getComments();
   });
 
   test("sets comments", () => {
     expect(discussion.comments).toBeDefined();
 
-    if (discussion.comments) {
+    if (discussion.comments !== null && discussion.comments !== undefined) {
       expect(discussion.comments.length).toEqual(3);
     }
   });
