@@ -10,8 +10,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 import { context as githubContext } from "@actions/github";
 import { getInput, info, debug, warning, notice, setFailed, } from "@actions/core";
 import "dotenv/config";
-import { Issue } from "./issue";
-import { Discussion } from "./discussion";
+import { Issue } from "./issue.js";
+import { Discussion } from "./discussion.js";
 function parseContext() {
     var _a, _b;
     const types = ["issue", "discussion"];

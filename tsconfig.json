@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-   // "module": "ESNext",
+    "module": "Node16",
     "baseUrl": "./",                       /* Base directory to resolve non-absolute module names. */
     "target": "es2015",                          /* Specify ECMAScript target version: 'ES3' (default), 'ES5', 'ES2015', 'ES2016', 'ES2017', 'ES2018', 'ES2019' or 'ESNEXT'. */
     "outDir": "./dist",                        /* Redirect output structure to the directory. */
@@ -9,10 +9,13 @@
     "noImplicitAny": true,                    /* Raise error on expressions and declarations with an implied 'any' type. */
     "esModuleInterop": true,                  /* Enables emit interoperability between CommonJS and ES Modules via creation of namespace objects for all imports. Implies 'allowSyntheticDefaultImports'. */
     //"lib": ["ESNext"],   
-    "moduleResolution": "Node",  
+    "moduleResolution": "Node16",  
     "allowJs": true,  
     "strictPropertyInitialization": false,
     "skipLibCheck": true,
   },
-  "exclude": ["node_modules", "__tests__/*.ts", "coverage", "dist"]
+  "exclude": ["node_modules", "coverage", "dist"],
+  "ts-node": {
+    "esm": true
+  }
 }

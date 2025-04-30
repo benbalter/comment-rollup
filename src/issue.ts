@@ -1,5 +1,10 @@
 import { info, setOutput } from "@actions/core";
-import { Rollupable, type RollupableClass, type Comment } from "./rollupable";
+import {
+  Rollupable,
+  type RollupableClass,
+  type Comment,
+} from "./rollupable.js";
+import { octokit } from "./octokit.js";
 
 export class Issue extends Rollupable implements RollupableClass {
   private get octokitArgs() {
@@ -12,7 +17,7 @@ export class Issue extends Rollupable implements RollupableClass {
 
   public async getData() {
     info(`Getting data for issue ${this.number}`);
-    const response = await this.octokit.rest.issues.get(this.octokitArgs);
+    const response = await octokit.rest.issues.get(this.octokitArgs);
     const labels = response.data.labels.map(
       (label: { name?: string | undefined } | string) => {
         if (typeof label === "string") {
@@ -29,21 +34,22 @@ export class Issue extends Rollupable implements RollupableClass {
     };
   }
 
-  public async updateBody(downloadUrl?: string) {
+  public async updateBody(
+    downloadUrl?: string,
+  ): Promise<string | null | undefined> {
     const body = this.bodyWithRollup(downloadUrl);
     setOutput("Updating body to: ", body);
-    await this.octokit.rest.issues.update({
+    const response = await octokit.rest.issues.update({
       ...this.octokitArgs,
       body,
     });
+    return response.data.body;
   }
 
   // Returns an array of comments on the issue
   public async getComments() {
     info(`Getting comments for issue ${this.number}`);
-    const response = await this.octokit.rest.issues.listComments(
-      this.octokitArgs,
-    );
+    const response = await octokit.rest.issues.listComments(this.octokitArgs);
     this.comments = response.data.map((comment: Comment) => {
       return {
         body: comment.body,

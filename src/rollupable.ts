@@ -2,11 +2,8 @@ import remarkHtml from "remark-html";
 import remarkParse from "remark-parse";
 import { unified } from "unified";
 import HTMLtoDOCX from "html-to-docx";
-import { type Octokit } from "octokit";
 import { getInput, setFailed } from "@actions/core";
-import { GitHub, getOctokitOptions } from "@actions/github/lib/utils";
 
-import { paginateGraphql } from "@octokit/plugin-paginate-graphql";
 import { writeFileSync } from "fs";
 import { type Buffer } from "buffer";
 import { DefaultArtifactClient } from "@actions/artifact";
@@ -42,7 +39,6 @@ export interface RollupableData {
 }
 
 export interface RollupableClass {
-  octokit: Octokit;
   repository: string;
   number: number;
   repoName: string;
@@ -67,29 +63,19 @@ export interface RollupableClass {
 
 export abstract class Rollupable implements RollupableClass {
   _data: RollupableData | undefined;
-  octokit: Octokit;
   repository: string;
   number: number;
   comments: Comment[] | undefined;
   owner: string;
   repoName: string;
 
-  public constructor(repository: string, number: number, octokit?: Octokit) {
+  public constructor(repository: string, number: number) {
     this.repository = repository;
     this.number = number;
 
     const parts = repository.split("/");
     this.owner = parts[0];
     this.repoName = parts[1];
-
-    if (octokit !== undefined && octokit !== null) {
-      this.octokit = octokit;
-      return this;
-    }
-
-    const OctokitWithPaginate = GitHub.plugin(paginateGraphql);
-    const token = getInput("token", { required: true });
-    this.octokit = new OctokitWithPaginate(getOctokitOptions(token)) as Octokit;
   }
 
   public get body(): string | undefined {
@@ -253,7 +239,9 @@ export abstract class Rollupable implements RollupableClass {
     throw new Error("Not implemented");
   }
 
-  public async updateBody(downloadUrl?: string): Promise<void> {
+  public async updateBody(
+    downloadUrl?: string,
+  ): Promise<string | null | undefined> {
     throw new Error("Not implemented");
   }
 

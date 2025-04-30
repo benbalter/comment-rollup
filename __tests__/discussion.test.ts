@@ -1,16 +1,15 @@
 import { expect, test } from "@jest/globals";
-import { Discussion } from "../src/discussion";
+import { Discussion } from "../src/discussion.js";
 import {
-  octokit,
   mockDiscussionData,
   mockGraphQL,
   mockCommentData,
-  sandbox,
-} from "./fixtures";
+} from "../src/fixtures.js";
+import { sandbox } from "../src/octokit.js";
 
 const discussionData = mockDiscussionData();
 const repo = `${discussionData.owner.login}/${discussionData.repo.name}`;
-const discussion = new Discussion(repo, discussionData.number, octokit);
+const discussion = new Discussion(repo, discussionData.number);
 
 const expectations = {
   repository: `${discussionData.owner.login}/${discussionData.repo.name}`,
@@ -26,12 +25,9 @@ const expectations = {
 };
 type DiscussionKey = keyof Discussion;
 
-test("returns Octokit", () => {
-  expect(discussion.octokit).toBeDefined();
-});
-
 describe("getData", () => {
-  beforeAll(async () => {
+  beforeEach(async () => {
+    sandbox.reset();
     const data = {
       data: {
         repository: {

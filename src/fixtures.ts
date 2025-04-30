@@ -1,15 +1,5 @@
-import fetchMock from "fetch-mock";
-import { type Octokit } from "octokit";
-import { GitHub, getOctokitOptions } from "@actions/github/lib/utils";
-import { paginateGraphql } from "@octokit/plugin-paginate-graphql";
 import { faker } from "@faker-js/faker";
-
-export const sandbox = fetchMock.sandbox();
-const OctokitWithPaginate = GitHub.plugin(paginateGraphql);
-const token = "TEST_TOKEN";
-const octokitOptions = getOctokitOptions(token);
-octokitOptions.request = { fetch: sandbox };
-export const octokit = new OctokitWithPaginate(octokitOptions) as Octokit;
+import { sandbox } from "./octokit.js";
 
 export function mockGraphQL(
   data: Record<string, any>,
@@ -91,7 +81,7 @@ export function mockCommentData(overrides?: Record<string, any>) {
     * ${faker.lorem.sentence()}
 `;
   const defaults = {
-    body: body,
+    body,
     author: {
       login,
     },

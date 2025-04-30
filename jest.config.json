@@ -8,5 +8,8 @@
   ],
   "testPathIgnorePatterns": [
     "/__tests__/fixtures.ts"
-  ]
+  ],
+  "moduleNameMapper": {
+    "^(\\.\\.?\\/.+)\\.jsx?$": "$1"
+  }
 }

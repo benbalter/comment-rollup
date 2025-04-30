@@ -12,27 +12,18 @@ import remarkParse from "remark-parse";
 import { unified } from "unified";
 import HTMLtoDOCX from "html-to-docx";
 import { getInput, setFailed } from "@actions/core";
-import { GitHub, getOctokitOptions } from "@actions/github/lib/utils";
-import { paginateGraphql } from "@octokit/plugin-paginate-graphql";
 import { writeFileSync } from "fs";
 import { DefaultArtifactClient } from "@actions/artifact";
 import { info } from "console";
 const summary = "Comment rollup";
 const rollupRegex = new RegExp(`<details>\\s*<summary>\\s*${summary}\\s*</summary>[\\s\\S]*?</details>`, "im");
 export class Rollupable {
-    constructor(repository, number, octokit) {
+    constructor(repository, number) {
         this.repository = repository;
         this.number = number;
         const parts = repository.split("/");
         this.owner = parts[0];
         this.repoName = parts[1];
-        if (octokit !== undefined && octokit !== null) {
-            this.octokit = octokit;
-            return this;
-        }
-        const OctokitWithPaginate = GitHub.plugin(paginateGraphql);
-        const token = getInput("token", { required: true });
-        this.octokit = new OctokitWithPaginate(getOctokitOptions(token));
     }
     get body() {
         var _a;

@@ -1,12 +1,13 @@
 import { expect, test } from "@jest/globals";
 import { faker } from "@faker-js/faker";
-import { mockIssueData, octokit, sandbox, mockCommentData } from "./fixtures";
-import { Issue } from "../src/issue";
+import { mockIssueData, mockCommentData } from "../src/fixtures.js";
+import { Issue } from "../src/issue.js";
+import { sandbox } from "../src/octokit.js";
 
 const repo = `${faker.company.buzzNoun()}/${faker.company.buzzNoun()}`;
 const number = faker.number.int();
 const issueData = mockIssueData();
-const issue = new Issue(repo, number, octokit);
+const issue = new Issue(repo, number);
 
 const expectations = {
   repository: repo,
@@ -19,12 +20,9 @@ const expectations = {
 };
 type IssueKey = keyof Issue;
 
-test("returns Octokit", () => {
-  expect(issue.octokit).toBeDefined();
-});
-
 describe("getData", () => {
-  beforeAll(async () => {
+  beforeEach(async () => {
+    sandbox.reset();
     const url = `https://api.github.com/repos/${repo}/issues/${number}`;
     sandbox.mock(
       {

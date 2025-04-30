@@ -8,7 +8,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 import { info, setOutput } from "@actions/core";
-import { Rollupable } from "./rollupable";
+import { Rollupable } from "./rollupable.js";
+import { octokit } from "./octokit.js";
 const dataQuery = `
   query ($name: String!, $owner: String!, $number: Int!) {
     repository(name: $name, owner: $owner) {
@@ -66,7 +67,7 @@ export class Discussion extends Rollupable {
     getComments() {
         return __awaiter(this, void 0, void 0, function* () {
             info(`Getting comments for discussion ${this.number}`);
-            const response = yield this.octokit.graphql.paginate(commentQuery, this.octokitArgs);
+            const response = yield octokit.graphql.paginate(commentQuery, this.octokitArgs);
             const comments = response.repository.discussion.comments.nodes;
             this.comments = comments.map((comment) => {
                 return {
@@ -81,7 +82,7 @@ export class Discussion extends Rollupable {
     getData() {
         return __awaiter(this, void 0, void 0, function* () {
             info(`Getting data for discussion ${this.number}`);
-            const response = yield this.octokit.graphql(dataQuery, this.octokitArgs);
+            const response = yield octokit.graphql(dataQuery, this.octokitArgs);
             this._data = response.repository.discussion;
             // backwards compatibility with the REST API response data used for Issues
             if (this._data !== undefined) {
@@ -92,10 +93,11 @@ export class Discussion extends Rollupable {
     updateBody(downloadUrl) {
         return __awaiter(this, void 0, void 0, function* () {
             setOutput("Updating body to: ", this.bodyWithRollup(downloadUrl));
-            yield this.octokit.graphql(updateBodyMutation, {
+            const response = yield octokit.graphql(updateBodyMutation, {
                 discussionId: this.id,
                 body: this.bodyWithRollup(downloadUrl),
             });
+            return response.updateDiscussion.discussion.body;
         });
     }
 }

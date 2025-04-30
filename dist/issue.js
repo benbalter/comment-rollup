@@ -8,7 +8,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 import { info, setOutput } from "@actions/core";
-import { Rollupable } from "./rollupable";
+import { Rollupable, } from "./rollupable.js";
+import { octokit } from "./octokit.js";
 export class Issue extends Rollupable {
     get octokitArgs() {
         return {
@@ -20,7 +21,7 @@ export class Issue extends Rollupable {
     getData() {
         return __awaiter(this, void 0, void 0, function* () {
             info(`Getting data for issue ${this.number}`);
-            const response = yield this.octokit.rest.issues.get(this.octokitArgs);
+            const response = yield octokit.rest.issues.get(this.octokitArgs);
             const labels = response.data.labels.map((label) => {
                 if (typeof label === "string") {
                     return { name: label };
@@ -39,14 +40,15 @@ export class Issue extends Rollupable {
         return __awaiter(this, void 0, void 0, function* () {
             const body = this.bodyWithRollup(downloadUrl);
             setOutput("Updating body to: ", body);
-            yield this.octokit.rest.issues.update(Object.assign(Object.assign({}, this.octokitArgs), { body }));
+            const response = yield octokit.rest.issues.update(Object.assign(Object.assign({}, this.octokitArgs), { body }));
+            return response.data.body;
         });
     }
     // Returns an array of comments on the issue
     getComments() {
         return __awaiter(this, void 0, void 0, function* () {
             info(`Getting comments for issue ${this.number}`);
-            const response = yield this.octokit.rest.issues.listComments(this.octokitArgs);
+            const response = yield octokit.rest.issues.listComments(this.octokitArgs);
             this.comments = response.data.map((comment) => {
                 var _a;
                 return {

@@ -1,24 +1,23 @@
 import { expect, test } from "@jest/globals";
 import {
-  octokit,
   mockIssueData,
   mockGraphQL,
   mockCommentData,
-  sandbox,
   mockDiscussionData,
-} from "./fixtures";
+} from "../src/fixtures.js";
 import { faker } from "@faker-js/faker";
-import { Issue } from "../src/issue";
-import { type Comment } from "../src/rollupable";
-import { Discussion } from "../src/discussion";
+import { Issue } from "../src/issue.js";
+import { type Comment } from "../src/rollupable.js";
+import { Discussion } from "../src/discussion.js";
 import { existsSync } from "node:fs";
+import { sandbox } from "../src/octokit.js";
 
 const repo = `${faker.company.buzzNoun()}/${faker.company.buzzNoun()}`;
 const number = faker.number.int();
 const issueData = mockIssueData();
-const issue = new Issue(repo, number, octokit);
+const issue = new Issue(repo, number);
 const discussionData = mockDiscussionData();
-const discussion = new Discussion(repo, discussionData.number, octokit);
+const discussion = new Discussion(repo, discussionData.number);
 const comments = [mockCommentData(), mockCommentData(), mockCommentData()];
 
 const mocks = {
@@ -27,7 +26,8 @@ const mocks = {
 };
 
 describe("Rollup", () => {
-  beforeAll(async () => {
+  beforeEach(async () => {
+    sandbox.reset();
     const url = `https://api.github.com/repos/${repo}/issues/${number}`;
     sandbox.mock(
       {
@@ -125,8 +125,8 @@ describe("Rollup", () => {
         expect(exists).toBe(true);
       });
 
-      test("uploads the rolloup", async () => {
-        // TODO
+      test("uploads the rollop", async () => {
+        // TODO. This requires a JWT or mocking the function
       });
 
       test("gets uploaded rollup URL", async () => {
@@ -137,8 +137,25 @@ describe("Rollup", () => {
         );
       });
 
-      test("updates the body with the rollup", () => {
-        // TODO
+      test("updates the body with the rollup", async () => {
+        mockGraphQL(
+          {
+            data: {
+              updateDiscussion: { discussion: { body: mock.bodyWithRollup() } },
+            },
+          },
+          "updateDiscussion",
+          "updateDiscussion",
+        );
+        const url = `https://api.github.com/repos/${mock.owner}/${mock.repoName}/issues/${number}`;
+        sandbox.mock(
+          { method: "PATCH", url },
+          { body: { body: mock.bodyWithRollup() } },
+          { sendAsJson: true },
+        );
+        const body = await mock.updateBody();
+        expect(body).toBeDefined();
+        expect(body).toMatch(/Comment rollup/);
       });
     });
   }

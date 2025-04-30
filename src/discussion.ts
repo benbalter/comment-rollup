@@ -1,6 +1,7 @@
 import { info, setOutput } from "@actions/core";
-import { Rollupable, type RollupableClass } from "./rollupable";
+import { Rollupable, type RollupableClass } from "./rollupable.js";
 import type { GraphQlQueryResponseData } from "@octokit/graphql";
+import { octokit } from "./octokit.js";
 
 const dataQuery = `
   query ($name: String!, $owner: String!, $number: Int!) {
@@ -61,8 +62,10 @@ export class Discussion extends Rollupable implements RollupableClass {
 
   public async getComments() {
     info(`Getting comments for discussion ${this.number}`);
-    const response: GraphQlQueryResponseData =
-      await this.octokit.graphql.paginate(commentQuery, this.octokitArgs);
+    const response: GraphQlQueryResponseData = await octokit.graphql.paginate(
+      commentQuery,
+      this.octokitArgs,
+    );
     const comments = response.repository.discussion.comments.nodes;
     this.comments = comments.map(
       (comment: { body: string; author: { login: string } }) => {
@@ -78,7 +81,7 @@ export class Discussion extends Rollupable implements RollupableClass {
 
   public async getData() {
     info(`Getting data for discussion ${this.number}`);
-    const response: GraphQlQueryResponseData = await this.octokit.graphql(
+    const response: GraphQlQueryResponseData = await octokit.graphql(
       dataQuery,
       this.octokitArgs,
     );
@@ -90,11 +93,18 @@ export class Discussion extends Rollupable implements RollupableClass {
     }
   }
 
-  public async updateBody(downloadUrl?: string) {
+  public async updateBody(
+    downloadUrl?: string,
+  ): Promise<string | null | undefined> {
     setOutput("Updating body to: ", this.bodyWithRollup(downloadUrl));
-    await this.octokit.graphql(updateBodyMutation, {
-      discussionId: this.id,
-      body: this.bodyWithRollup(downloadUrl),
-    });
+    const response: GraphQlQueryResponseData = await octokit.graphql(
+      updateBodyMutation,
+      {
+        discussionId: this.id,
+        body: this.bodyWithRollup(downloadUrl),
+      },
+    );
+
+    return response.updateDiscussion.discussion.body;
   }
 }
