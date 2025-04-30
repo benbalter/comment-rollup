@@ -21,3 +21,7 @@ updates:
       github-actions:
         patterns:
         - "*"
+  - package-ecosystem: "devcontainers"
+    directory: "/"
+    schedule:
+      interval: "weekly"

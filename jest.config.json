@@ -4,7 +4,7 @@
     "/node_modules/"
   ], 
   "transformIgnorePatterns": [
-    "!node_modules/"
+    "!/node_modules/"
   ],
   "testPathIgnorePatterns": [
     "/__tests__/fixtures.ts"
