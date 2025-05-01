@@ -19,7 +19,7 @@ if (process.env.NODE_ENV === "test") {
   options = getOctokitOptions("TEST_TOKEN");
   options.request = { fetch: sandbox };
 } else {
-  options = getOctokitOptions(getInput("GITHUB_TOKEN", { required: true }));
+  options = getOctokitOptions(getInput("TOKEN", { required: true }));
 }
 
 export const octokit = new OctokitWithPlugins(options);
