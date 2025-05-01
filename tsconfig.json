@@ -14,7 +14,7 @@
     "strictPropertyInitialization": false,
     "skipLibCheck": true,
   },
-  "exclude": ["node_modules", "coverage", "dist"],
+  "exclude": ["node_modules", "__tests__", "coverage", "dist"],
   "ts-node": {
     "esm": true
   }
