@@ -6,7 +6,7 @@ import { paginateRest } from "@octokit/plugin-paginate-rest";
 import { getInput } from "@actions/core";
 import fetchMock from "fetch-mock";
 
-export const sandbox = fetchMock.sandbox();
+export const sandbox = fetchMock.createInstance();
 
 const OctokitWithPlugins = Octokit.plugin(
   paginateRest,
@@ -17,7 +17,7 @@ const OctokitWithPlugins = Octokit.plugin(
 let options: OctokitOptions = {};
 if (process.env.NODE_ENV === "test") {
   options = getOctokitOptions("TEST_TOKEN");
-  options.request = { fetch: sandbox };
+  options.request = { fetch: sandbox.fetchHandler };
 } else {
   options = getOctokitOptions(getInput("TOKEN", { required: true }));
 }

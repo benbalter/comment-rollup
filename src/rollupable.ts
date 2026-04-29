@@ -240,7 +240,7 @@ export abstract class Rollupable implements RollupableClass {
   }
 
   public async updateBody(
-    downloadUrl?: string,
+    _downloadUrl?: string,
   ): Promise<string | null | undefined> {
     throw new Error("Not implemented");
   }

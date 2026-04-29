@@ -27,7 +27,8 @@ type DiscussionKey = keyof Discussion;
 
 describe("getData", () => {
   beforeEach(async () => {
-    sandbox.reset();
+    sandbox.removeRoutes();
+    sandbox.clearHistory();
     const data = {
       data: {
         repository: {
@@ -52,7 +53,8 @@ describe("getData", () => {
 
 describe("getComments", () => {
   beforeAll(async () => {
-    sandbox.restore();
+    sandbox.removeRoutes();
+    sandbox.clearHistory();
     const comments = [mockCommentData(), mockCommentData(), mockCommentData()];
 
     const commentData = {

@@ -27,16 +27,17 @@ const mocks = {
 
 describe("Rollup", () => {
   beforeEach(async () => {
-    sandbox.reset();
+    sandbox.removeRoutes();
+    sandbox.clearHistory();
     const url = `https://api.github.com/repos/${repo}/issues/${number}`;
-    sandbox.mock(
-      {
-        method: "GET",
-        url,
+    sandbox.route({
+      method: "GET",
+      url,
+      response: {
+        status: 200,
+        body: issueData,
       },
-      issueData,
-      { sendAsJson: true },
-    );
+    });
     await issue.getData();
 
     const commentData = {
@@ -68,14 +69,14 @@ describe("Rollup", () => {
     await discussion.getData();
 
     const commentUrl = `https://api.github.com/repos/${repo}/issues/${number}/comments`;
-    sandbox.mock(
-      {
-        method: "GET",
-        url: commentUrl,
+    sandbox.route({
+      method: "GET",
+      url: commentUrl,
+      response: {
+        status: 200,
+        body: comments,
       },
-      comments,
-      { sendAsJson: true },
-    );
+    });
     await issue.getComments();
   });
 
@@ -148,11 +149,14 @@ describe("Rollup", () => {
           "updateDiscussion",
         );
         const url = `https://api.github.com/repos/${mock.owner}/${mock.repoName}/issues/${number}`;
-        sandbox.mock(
-          { method: "PATCH", url },
-          { body: { body: mock.bodyWithRollup() } },
-          { sendAsJson: true },
-        );
+        sandbox.route({
+          method: "PATCH",
+          url,
+          response: {
+            status: 200,
+            body: { body: mock.bodyWithRollup() },
+          },
+        });
         const body = await mock.updateBody();
         expect(body).toBeDefined();
         expect(body).toMatch(/Comment rollup/);

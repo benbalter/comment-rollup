@@ -2,7 +2,7 @@
   "preset": "ts-jest/presets/js-with-babel-esm",
   "coveragePathIgnorePatterns": [
     "/node_modules/"
-  ], 
+  ],
   "transformIgnorePatterns": [
     "!/node_modules/"
   ],
@@ -10,6 +10,6 @@
     "/__tests__/fixtures.ts"
   ],
   "moduleNameMapper": {
-    "^(\\.\\.?\\/.+)\\.jsx?$": "$1"
+    "^(\\.{1,2}/.+)\\.js$": "$1"
   }
 }

@@ -22,16 +22,17 @@ type IssueKey = keyof Issue;
 
 describe("getData", () => {
   beforeEach(async () => {
-    sandbox.reset();
+    sandbox.removeRoutes();
+    sandbox.clearHistory();
     const url = `https://api.github.com/repos/${repo}/issues/${number}`;
-    sandbox.mock(
-      {
-        method: "GET",
-        url,
+    sandbox.route({
+      method: "GET",
+      url,
+      response: {
+        status: 200,
+        body: issueData,
       },
-      issueData,
-      { sendAsJson: true },
-    );
+    });
     await issue.getData();
   });
 
@@ -48,28 +49,29 @@ describe("getData", () => {
 
 describe("getComments", () => {
   beforeAll(async () => {
-    sandbox.restore();
+    sandbox.removeRoutes();
+    sandbox.clearHistory();
     const comments = [mockCommentData(), mockCommentData(), mockCommentData()];
     const commentUrl = `https://api.github.com/repos/${repo}/issues/${number}/comments`;
-    sandbox.mock(
-      {
-        method: "GET",
-        url: commentUrl,
+    sandbox.route({
+      method: "GET",
+      url: commentUrl,
+      response: {
+        status: 200,
+        body: comments,
       },
-      comments,
-      { sendAsJson: true },
-    );
+    });
     await issue.getComments();
 
     const url = `https://api.github.com/repos/${repo}/issues/${number}`;
-    sandbox.mock(
-      {
-        method: "GET",
-        url,
+    sandbox.route({
+      method: "GET",
+      url,
+      response: {
+        status: 200,
+        body: issueData,
       },
-      issueData,
-      { sendAsJson: true },
-    );
+    });
     await issue.getData();
   });
 

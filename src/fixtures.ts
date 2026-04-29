@@ -1,33 +1,34 @@
 import { faker } from "@faker-js/faker";
 import { sandbox } from "./octokit.js";
+import type { CallLog } from "fetch-mock";
 
 export function mockGraphQL(
   data: Record<string, any>,
   name: string,
   body?: string,
 ) {
-  const response = { status: 200, body: data };
-  const matcher = (_: string, options: Record<string, any>): boolean => {
+  const matcher = (callLog: CallLog): boolean => {
     if (body == null) {
       return true;
     }
 
-    if (options.body == null) {
+    const reqBody = callLog.options?.body;
+    if (reqBody == null) {
       return false;
     }
 
-    return options.body.toString().includes(body);
+    return reqBody.toString().includes(body);
   };
-  sandbox.mock(
-    {
-      method: "POST",
-      url: "https://api.github.com/graphql",
-      name,
-      functionMatcher: matcher,
+  sandbox.route({
+    method: "POST",
+    url: "https://api.github.com/graphql",
+    name,
+    matcherFunction: matcher,
+    response: {
+      status: 200,
+      body: data,
     },
-    response,
-    { sendAsJson: true },
-  );
+  });
 }
 
 export function mockLabels() {
