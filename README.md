@@ -10,17 +10,35 @@ It is based on https://github.com/actions/typescript-action.
 
 * `token` - `${{ secrets.GITHUB_TOKEN }}` **Required**
 * `label` - A label to require on issues before rolling up comments (optional)
-* `link_to_doc` - Whether to link to a Word document with the rollup (optional)
-* `group_by_headings` - Whether to group comments by heading (BETA) (optional)
+* `link_to_doc` - Whether to link to a Word document with the rollup (optional). The document is uploaded as a workflow artifact, so the link expires after 7 days.
+* `group_by_heading` - Whether to group comments by heading (BETA) (optional)
+* `number` - The issue or discussion number to roll up (optional). Defaults to the issue or discussion that triggered the workflow.
+* `type` - Whether `number` refers to an `issue` or a `discussion` (optional, defaults to `issue`). Only used when `number` is set.
+
+## Outputs
+
+* `body` - The updated issue or discussion body
+
+If the rollup would push the body past GitHub's 65,536 character limit, the action leaves it out of the body and links to the Word document instead, when there is one.
 
 ## Example usage
 
 ```yaml
-on: 
+on:
   issue_comment: {} # Remove to only rollup discussion comments
   discussion_comment: {} # Remove to only rollup issue comments
 
 name: Rollup weekly comments
+
+permissions:
+  contents: read
+  issues: write
+  discussions: write
+
+# Keeps overlapping runs from overwriting each other's rollup
+concurrency:
+  group: rollup-${{ github.event.issue.number || github.event.discussion.number }}
+  cancel-in-progress: false
 
 jobs:
   comment_rollup:

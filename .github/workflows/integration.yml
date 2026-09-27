@@ -1,4 +1,4 @@
-on: 
+on:
   issue_comment: {}
   discussion_comment: {}
 

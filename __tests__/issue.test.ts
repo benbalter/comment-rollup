@@ -1,8 +1,7 @@
 import { expect, test } from "@jest/globals";
 import { faker } from "@faker-js/faker";
-import { mockIssueData, mockCommentData } from "../src/fixtures.js";
+import { mockIssueData, mockCommentData, sandbox } from "./fixtures.js";
 import { Issue } from "../src/issue.js";
-import { sandbox } from "../src/octokit.js";
 
 const repo = `${faker.company.buzzNoun()}/${faker.company.buzzNoun()}`;
 const number = faker.number.int();
@@ -55,7 +54,7 @@ describe("getComments", () => {
     const commentUrl = `https://api.github.com/repos/${repo}/issues/${number}/comments`;
     sandbox.route({
       method: "GET",
-      url: commentUrl,
+      url: `begin:${commentUrl}`,
       response: {
         status: 200,
         body: comments,

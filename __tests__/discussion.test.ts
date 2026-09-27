@@ -4,8 +4,8 @@ import {
   mockDiscussionData,
   mockGraphQL,
   mockCommentData,
-} from "../src/fixtures.js";
-import { sandbox } from "../src/octokit.js";
+  sandbox,
+} from "./fixtures.js";
 
 const discussionData = mockDiscussionData();
 const repo = `${discussionData.owner.login}/${discussionData.repo.name}`;

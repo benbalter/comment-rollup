@@ -4,9 +4,6 @@ import { paginateGraphQL } from "@octokit/plugin-paginate-graphql";
 import { restEndpointMethods } from "@octokit/plugin-rest-endpoint-methods";
 import { paginateRest } from "@octokit/plugin-paginate-rest";
 import { getInput } from "@actions/core";
-import fetchMock from "fetch-mock";
-
-export const sandbox = fetchMock.createInstance();
 
 const OctokitWithPlugins = Octokit.plugin(
   paginateRest,
@@ -14,12 +11,28 @@ const OctokitWithPlugins = Octokit.plugin(
   restEndpointMethods,
 );
 
-let options: OctokitOptions = {};
-if (process.env.NODE_ENV === "test") {
-  options = getOctokitOptions("TEST_TOKEN");
-  options.request = { fetch: sandbox.fetchHandler };
-} else {
-  options = getOctokitOptions(getInput("TOKEN", { required: true }));
+let instance: InstanceType<typeof OctokitWithPlugins> | undefined;
+let fetchOverride: typeof fetch | undefined;
+
+// Lets tests route requests through a mock without bundling it into the action
+export function setFetch(fetchImpl: typeof fetch | undefined) {
+  fetchOverride = fetchImpl;
 }
 
-export const octokit = new OctokitWithPlugins(options);
+// Created lazily so a missing token surfaces as an action failure, not an import error
+export function getOctokit() {
+  if (instance === undefined) {
+    const options: OctokitOptions = getOctokitOptions(
+      getInput("token", { required: true }),
+    );
+    const defaultFetch: typeof fetch = options.request?.fetch ?? fetch;
+    options.request = {
+      ...options.request,
+      fetch: async (...args: Parameters<typeof fetch>) =>
+        (fetchOverride ?? defaultFetch)(...args),
+    };
+    instance = new OctokitWithPlugins(options);
+  }
+
+  return instance;
+}

@@ -30,7 +30,7 @@ export default tseslint.config(
       "i18n-text/no-en": "off",
       "camelcase": "warn",
       "@typescript-eslint/restrict-template-expressions": "warn",
-      "@typescript-eslint/no-floating-promises": "warn",
+      "@typescript-eslint/no-floating-promises": "error",
       "@typescript-eslint/ban-ts-comment": "warn",
       "import/extensions": "warn",
       "import/no-unresolved": "warn",
