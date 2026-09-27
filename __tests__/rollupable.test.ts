@@ -4,13 +4,13 @@ import {
   mockGraphQL,
   mockCommentData,
   mockDiscussionData,
-} from "../src/fixtures.js";
+  sandbox,
+} from "./fixtures.js";
 import { faker } from "@faker-js/faker";
 import { Issue } from "../src/issue.js";
 import { type Comment } from "../src/rollupable.js";
 import { Discussion } from "../src/discussion.js";
 import { existsSync } from "node:fs";
-import { sandbox } from "../src/octokit.js";
 
 const repo = `${faker.company.buzzNoun()}/${faker.company.buzzNoun()}`;
 const number = faker.number.int();
@@ -71,7 +71,7 @@ describe("Rollup", () => {
     const commentUrl = `https://api.github.com/repos/${repo}/issues/${number}/comments`;
     sandbox.route({
       method: "GET",
-      url: commentUrl,
+      url: `begin:${commentUrl}`,
       response: {
         status: 200,
         body: comments,

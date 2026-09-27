@@ -5,14 +5,13 @@ import {
   debug,
   warning,
   notice,
-  setFailed,
+  setOutput,
 } from "@actions/core";
-import "dotenv/config";
 import { Issue } from "./issue.js";
 import { Discussion } from "./discussion.js";
 import { type Rollupable } from "./rollupable.js";
 
-function parseContext() {
+export function parseContext() {
   const types = ["issue", "discussion"];
   let number: number | undefined;
   let rollupableType = "";
@@ -36,10 +35,14 @@ function parseContext() {
     throw new Error("No issue or discussion found in payload");
   }
 
+  if (Number.isNaN(number)) {
+    throw new Error(`Invalid number ${getInput("number")}`);
+  }
+
   return { number, rollupableType };
 }
 
-async function run(): Promise<void> {
+export async function run(): Promise<void> {
   const label = getInput("label");
   const { number, rollupableType } = parseContext();
   const repo = `${githubContext.repo.owner}/${githubContext.repo.repo}`;
@@ -61,7 +64,7 @@ async function run(): Promise<void> {
     info(
       `${rollupableType} ${rollupable.title} does not have label ${label}. Skipping.`,
     );
-    debug(`Labels: ${rollupable.labels}`);
+    debug(`Labels: ${rollupable.labels?.join(", ")}`);
     return;
   }
 
@@ -74,7 +77,7 @@ async function run(): Promise<void> {
   }
 
   let uploadedRollupUrl: string | undefined;
-  if (getInput("LINK_TO_DOC") === "true") {
+  if (getInput("link_to_doc") === "true") {
     const uploadId = await rollupable.uploadRollup();
     uploadedRollupUrl = rollupable.getUploadedRollupUrl(uploadId);
     info(`Uploaded rollup to ${uploadedRollupUrl}`);
@@ -82,16 +85,9 @@ async function run(): Promise<void> {
     uploadedRollupUrl = undefined;
   }
 
-  await rollupable.updateBody(uploadedRollupUrl);
+  const body = await rollupable.updateBody(uploadedRollupUrl);
+  setOutput("body", body ?? "");
   notice(
     `Rolled up ${rollupable.comments?.length} comments to ${rollupableType} ${rollupable.title}`,
   );
 }
-
-try {
-  run();
-} catch (error) {
-  if (error instanceof Error) setFailed(error.message);
-}
-
-export { run };

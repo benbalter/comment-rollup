@@ -1,6 +1,12 @@
 import { faker } from "@faker-js/faker";
-import { sandbox } from "./octokit.js";
-import type { CallLog } from "fetch-mock";
+import fetchMock, { type CallLog } from "fetch-mock";
+import { setFetch } from "../src/octokit.js";
+
+process.env.INPUT_TOKEN = "TEST_TOKEN";
+faker.seed(1234);
+
+export const sandbox = fetchMock.createInstance();
+setFetch(sandbox.fetchHandler);
 
 export function mockGraphQL(
   data: Record<string, any>,
@@ -67,19 +73,18 @@ export function mockDiscussionData(overrides?: Record<string, any>) {
 }
 
 export function mockCommentData(overrides?: Record<string, any>) {
-  const login = faker.internet.userName();
-  const body = `
-    ## Heading 1
+  const login = faker.internet.username();
+  const body = `## Heading 1
 
-    * ${faker.lorem.sentence()}
-    * ${faker.lorem.sentence()}
-    * ${faker.lorem.sentence()}
-    
-    ## Heading 2
+* ${faker.lorem.sentence()}
+* ${faker.lorem.sentence()}
+* ${faker.lorem.sentence()}
 
-    * ${faker.lorem.sentence()}
-    * ${faker.lorem.sentence()}
-    * ${faker.lorem.sentence()}
+## Heading 2
+
+* ${faker.lorem.sentence()}
+* ${faker.lorem.sentence()}
+* ${faker.lorem.sentence()}
 `;
   const defaults = {
     body,

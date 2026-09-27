@@ -1,7 +1,7 @@
-import { info, setOutput } from "@actions/core";
+import { info } from "@actions/core";
 import { Rollupable, type RollupableClass } from "./rollupable.js";
 import type { GraphQlQueryResponseData } from "@octokit/graphql";
-import { octokit } from "./octokit.js";
+import { getOctokit } from "./octokit.js";
 
 const dataQuery = `
   query ($name: String!, $owner: String!, $number: Int!) {
@@ -9,7 +9,7 @@ const dataQuery = `
       discussion(number: $number) {
         id
         title
-        labels(first: 10) {
+        labels(first: 100) {
           nodes {
             name
           }
@@ -24,7 +24,7 @@ const commentQuery = `
 query ($name: String!, $owner: String!, $number: Int!, $cursor: String) {
   repository(name: $name, owner: $owner) {
     discussion(number: $number) {
-      comments(last: 100, after: $cursor) {
+      comments(first: 100, after: $cursor) {
         pageInfo {
           hasNextPage
           endCursor
@@ -62,17 +62,16 @@ export class Discussion extends Rollupable implements RollupableClass {
 
   public async getComments() {
     info(`Getting comments for discussion ${this.number}`);
-    const response: GraphQlQueryResponseData = await octokit.graphql.paginate(
-      commentQuery,
-      this.octokitArgs,
-    );
+    const response: GraphQlQueryResponseData =
+      await getOctokit().graphql.paginate(commentQuery, this.octokitArgs);
     const comments = response.repository.discussion.comments.nodes;
     this.comments = comments.map(
-      (comment: { body: string; author: { login: string } }) => {
+      (comment: { body: string; author: { login: string } | null }) => {
         return {
           body: comment.body,
           user: {
-            login: comment.author.login,
+            // Deleted accounts come back with a null author
+            login: comment.author?.login ?? "ghost",
           },
         };
       },
@@ -81,7 +80,7 @@ export class Discussion extends Rollupable implements RollupableClass {
 
   public async getData() {
     info(`Getting data for discussion ${this.number}`);
-    const response: GraphQlQueryResponseData = await octokit.graphql(
+    const response: GraphQlQueryResponseData = await getOctokit().graphql(
       dataQuery,
       this.octokitArgs,
     );
@@ -96,8 +95,7 @@ export class Discussion extends Rollupable implements RollupableClass {
   public async updateBody(
     downloadUrl?: string,
   ): Promise<string | null | undefined> {
-    setOutput("Updating body to: ", this.bodyWithRollup(downloadUrl));
-    const response: GraphQlQueryResponseData = await octokit.graphql(
+    const response: GraphQlQueryResponseData = await getOctokit().graphql(
       updateBodyMutation,
       {
         discussionId: this.id,

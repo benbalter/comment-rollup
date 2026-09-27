@@ -2,19 +2,27 @@ import remarkHtml from "remark-html";
 import remarkParse from "remark-parse";
 import { unified } from "unified";
 import HTMLtoDOCX from "html-to-docx";
-import { getInput, setFailed } from "@actions/core";
+import { getInput, info, warning } from "@actions/core";
 
 import { writeFileSync } from "fs";
 import { type Buffer } from "buffer";
 import { DefaultArtifactClient } from "@actions/artifact";
-import { info } from "console";
 import { type VFile } from "vfile";
 
 const summary = "Comment rollup";
-const rollupRegex = new RegExp(
-  `<details>\\s*<summary>\\s*${summary}\\s*</summary>[\\s\\S]*?</details>`,
-  "im",
+const startMarker = "<!-- comment-rollup:start -->";
+const endMarker = "<!-- comment-rollup:end -->";
+const rollupRegex = new RegExp(`${startMarker}[\\s\\S]*${endMarker}`);
+
+// Rollups written before the markers were added. Greedy, since comments may
+// contain their own <details> blocks and the rollup was always appended last.
+const legacyRollupRegex = new RegExp(
+  `<details>\\s*<summary>\\s*${summary}\\s*</summary>[\\s\\S]*</details>`,
+  "i",
 );
+
+// GitHub rejects issue and discussion bodies longer than this
+export const MAX_BODY_LENGTH = 65536;
 
 export interface Label {
   name?: string | undefined;
@@ -120,7 +128,7 @@ export abstract class Rollupable implements RollupableClass {
       }
 
       for (const part of parts) {
-        if (part === "") {
+        if (part.trim() === "") {
           continue;
         }
 
@@ -158,8 +166,11 @@ export abstract class Rollupable implements RollupableClass {
       md += `[Download rollup](${downloadUrl})\n\n`;
     }
 
-    if (getInput("group_by_headings") === "true") {
-      md = this.commentsByHeadings();
+    if (
+      getInput("group_by_heading") === "true" ||
+      getInput("group_by_headings") === "true"
+    ) {
+      md += this.commentsByHeadings();
     } else {
       for (const comment of this.comments) {
         md += `From: ${comment.user?.login}\n\n${comment.body}\n\n`;
@@ -178,10 +189,6 @@ export abstract class Rollupable implements RollupableClass {
 
   public async docxRollup() {
     const html = await this.htmlRollup();
-    if (html === undefined) {
-      setFailed("Could not convert rollup to HTML");
-      return;
-    }
     return await HTMLtoDOCX(html.toString());
   }
 
@@ -250,21 +257,45 @@ export abstract class Rollupable implements RollupableClass {
       throw new Error("Rollupable body is undefined");
     }
 
-    let body: string;
-    let rollup = this.rollup(downloadUrl);
+    const rollup = this.rollup(downloadUrl);
 
     if (rollup === undefined) {
       return this.body;
     }
 
-    rollup = `<details><summary>${summary}</summary>\n\n${rollup}\n\n</details>`;
+    let body = this.replaceRollup(rollup);
 
-    if (this.body?.match(rollupRegex) != null) {
-      body = this.body.replace(rollupRegex, rollup);
-    } else {
-      body = `${this.body}\n\n${rollup}`;
+    if (body.length > MAX_BODY_LENGTH) {
+      warning(
+        `Rollup would exceed GitHub's ${MAX_BODY_LENGTH} character limit. Omitting it from the body.`,
+      );
+      let notice = "Rollup is too large to display inline.";
+      if (downloadUrl !== undefined) {
+        notice += ` [Download rollup](${downloadUrl})`;
+      }
+      body = this.replaceRollup(notice);
     }
 
     return body;
+  }
+
+  private replaceRollup(content: string): string {
+    const body = this.body ?? "";
+    const block = `${startMarker}\n<details><summary>${summary}</summary>\n\n${content}\n\n</details>\n${endMarker}`;
+
+    // Replacer functions keep `$` sequences in comments from being treated as patterns
+    if (rollupRegex.test(body)) {
+      return body.replace(rollupRegex, () => block);
+    }
+
+    if (legacyRollupRegex.test(body)) {
+      return body.replace(legacyRollupRegex, () => block);
+    }
+
+    if (body === "") {
+      return block;
+    }
+
+    return `${body}\n\n${block}`;
   }
 }

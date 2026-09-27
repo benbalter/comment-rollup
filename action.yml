@@ -5,14 +5,14 @@ inputs:
     description: Label of issues or discussions to rollup
     required: false
   number:
-    description: Issue or discussion number to rollup
+    description: Issue or discussion number to rollup. Defaults to the issue or discussion that triggered the workflow
     required: false
   token:
     description: Github token
     required: true
   type:
-    description: Type of issue or discussion to rollup
-    required: true
+    description: Whether `number` refers to an `issue` or a `discussion`. Only used when `number` is set
+    required: false
     default: issue
   link_to_doc:
     description: Whether to create and link to a .docx file
@@ -20,9 +20,13 @@ inputs:
   group_by_heading:
     description: By default, the rollup is grouped by comment. If true, will group bullets by common headings
     required: false
+  group_by_headings:
+    description: Alias for group_by_heading
+    required: false
+    deprecationMessage: Use group_by_heading instead
 outputs:
   body:
     description: The resulting issue body
 runs:
-  using: 'node20'
+  using: 'node24'
   main: 'dist/index.js'

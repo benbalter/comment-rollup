@@ -3,4 +3,4 @@
 set -e
 
 npm run all
-yamllint ./*.yml
+yamllint ./*.yml .github/workflows/*.yml

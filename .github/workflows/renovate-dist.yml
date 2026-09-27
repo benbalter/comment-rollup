@@ -1,0 +1,47 @@
+# Renovate can't rebuild dist/ itself, so dependency updates would never pass check-dist.
+name: Rebuild dist/ for Renovate
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  rebuild-dist:
+    if: startsWith(github.head_ref, 'renovate/') && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: 'npm'
+
+      - run: npm ci
+
+      - run: npm run package
+
+      - name: Commit dist/
+        run: |
+          if [ -z "$(git status --porcelain dist/)" ]; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add dist/
+          git commit -m "Rebuild dist/"
+          git push
+          # Pushes made with GITHUB_TOKEN don't trigger workflows, so dispatch the required checks
+          gh workflow run ci.yml --ref "$GITHUB_HEAD_REF"
+          gh workflow run check-dist.yml --ref "$GITHUB_HEAD_REF"
+        env:
+          GH_TOKEN: ${{ github.token }}
