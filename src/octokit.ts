@@ -1,5 +1,5 @@
 import { Octokit, type OctokitOptions } from "@octokit/core";
-import { getOctokitOptions } from "@actions/github/lib/utils.js";
+import { getOctokitOptions } from "@actions/github/lib/utils";
 import { paginateGraphQL } from "@octokit/plugin-paginate-graphql";
 import { restEndpointMethods } from "@octokit/plugin-rest-endpoint-methods";
 import { paginateRest } from "@octokit/plugin-paginate-rest";
