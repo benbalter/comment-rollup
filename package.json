@@ -9,7 +9,7 @@
     "lint-check": "eslint",
     "fix": "eslint --fix && prettier --write '**/*.ts'",
     "package": "ncc build src/index.ts --source-map --license licenses.txt",
-    "test": "jest --coverage --",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest --coverage --",
     "all": "npm run format && npm run lint && npm run package && npm test",
     "run": "npx tsx --env-file-if-exists=.env src/index.ts"
   },
