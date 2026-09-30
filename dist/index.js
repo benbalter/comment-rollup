@@ -183948,7 +183948,7 @@ ZipStream.prototype.finalize = function() {
 
 __nccwpck_require__.a(module, async (__webpack_handle_async_dependencies__, __webpack_async_result__) => { try {
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __nccwpck_require__(4932);
-/* harmony import */ var _main_js__WEBPACK_IMPORTED_MODULE_1__ = __nccwpck_require__(55423);
+/* harmony import */ var _main_js__WEBPACK_IMPORTED_MODULE_1__ = __nccwpck_require__(91231);
 
 
 try {
@@ -183963,7 +183963,7 @@ __webpack_async_result__();
 
 /***/ }),
 
-/***/ 55423:
+/***/ 91231:
 /***/ ((__unused_webpack_module, __webpack_exports__, __nccwpck_require__) => {
 
 
@@ -264844,7 +264844,7 @@ var endpoint_dist_bundle_endpoint = _octokit_endpoint_dist_bundle_withDefaults(n
 
 // EXTERNAL MODULE: ./node_modules/fast-content-type-parse/index.js
 var fast_content_type_parse = __nccwpck_require__(41120);
-;// CONCATENATED MODULE: ./node_modules/@octokit/request/node_modules/@octokit/request-error/dist-src/index.js
+;// CONCATENATED MODULE: ./node_modules/@octokit/request-error/dist-src/index.js
 class request_error_dist_src_RequestError extends Error {
   name;
   /**
@@ -265263,7 +265263,7 @@ var auth_token_dist_bundle_createTokenAuth = function createTokenAuth2(token) {
 
 
 ;// CONCATENATED MODULE: ./node_modules/@octokit/core/dist-src/version.js
-const _octokit_core_dist_src_version_VERSION = "6.1.5";
+const _octokit_core_dist_src_version_VERSION = "6.1.6";
 
 
 ;// CONCATENATED MODULE: ./node_modules/@octokit/core/dist-src/index.js
@@ -265277,6 +265277,21 @@ const _octokit_core_dist_src_noop = () => {
 };
 const core_dist_src_consoleWarn = console.warn.bind(console);
 const core_dist_src_consoleError = console.error.bind(console);
+function core_dist_src_createLogger(logger = {}) {
+  if (typeof logger.debug !== "function") {
+    logger.debug = _octokit_core_dist_src_noop;
+  }
+  if (typeof logger.info !== "function") {
+    logger.info = _octokit_core_dist_src_noop;
+  }
+  if (typeof logger.warn !== "function") {
+    logger.warn = core_dist_src_consoleWarn;
+  }
+  if (typeof logger.error !== "function") {
+    logger.error = core_dist_src_consoleError;
+  }
+  return logger;
+}
 const core_dist_src_userAgentTrail = `octokit-core.js/${_octokit_core_dist_src_version_VERSION} ${getUserAgent()}`;
 class core_dist_src_Octokit {
   static VERSION = _octokit_core_dist_src_version_VERSION;
@@ -265344,15 +265359,7 @@ class core_dist_src_Octokit {
     }
     this.request = request_dist_bundle_request.defaults(requestDefaults);
     this.graphql = graphql_dist_bundle_withCustomRequest(this.request).defaults(requestDefaults);
-    this.log = Object.assign(
-      {
-        debug: _octokit_core_dist_src_noop,
-        info: _octokit_core_dist_src_noop,
-        warn: core_dist_src_consoleWarn,
-        error: core_dist_src_consoleError
-      },
-      options.log
-    );
+    this.log = core_dist_src_createLogger(options.log);
     this.hook = hook;
     if (!options.authStrategy) {
       if (!options.auth) {
