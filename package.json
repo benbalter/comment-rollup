@@ -40,12 +40,12 @@
     "xmlbuilder2": "^3.1.1"
   },
   "devDependencies": {
-    "@eslint/js": "^9.39.4",
+    "@eslint/js": "^10.0.0",
     "@faker-js/faker": "^10.0.0",
     "@types/jest": "^29.5.14",
     "@types/node": "^24.19.0",
     "@vercel/ncc": "^0.38.3",
-    "eslint": "^9.39.4",
+    "eslint": "^10.0.0",
     "eslint-plugin-github": "^6.0.0",
     "fetch-mock": "^12.6.0",
     "globals": "^16.5.0",
