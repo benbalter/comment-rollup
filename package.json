@@ -24,7 +24,7 @@
   },
   "homepage": "https://github.com/benbalter/comment-rollup#readme",
   "dependencies": {
-    "@actions/artifact": "^2.3.2",
+    "@actions/artifact": "^6.0.0",
     "@actions/core": "^3.0.0",
     "@actions/github": "^9.0.0",
     "@octokit/core": "^6.1.5",
