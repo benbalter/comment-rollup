@@ -95,11 +95,15 @@ export class Discussion extends Rollupable implements RollupableClass {
   public async updateBody(
     downloadUrl?: string,
   ): Promise<string | null | undefined> {
+    return this.writeBody(this.bodyWithRollup(downloadUrl));
+  }
+
+  protected async writeBody(body: string): Promise<string | null | undefined> {
     const response: GraphQlQueryResponseData = await getOctokit().graphql(
       updateBodyMutation,
       {
         discussionId: this.id,
-        body: this.bodyWithRollup(downloadUrl),
+        body,
       },
     );
 

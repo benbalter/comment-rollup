@@ -33,9 +33,13 @@ export class Issue extends Rollupable implements RollupableClass {
   public async updateBody(
     downloadUrl?: string,
   ): Promise<string | null | undefined> {
+    return this.writeBody(this.bodyWithRollup(downloadUrl));
+  }
+
+  protected async writeBody(body: string): Promise<string | null | undefined> {
     const response = await getOctokit().rest.issues.update({
       ...this.octokitArgs,
-      body: this.bodyWithRollup(downloadUrl),
+      body,
     });
     return response.data.body;
   }
