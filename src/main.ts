@@ -70,9 +70,15 @@ export async function run(): Promise<void> {
 
   await rollupable.getComments();
   if (rollupable.comments?.length === 0) {
-    warning(
-      `${rollupableType} ${rollupable.title} does not have any comments. Skipping.`,
-    );
+    const body = await rollupable.clearRollup();
+    if (body === undefined) {
+      warning(
+        `${rollupableType} ${rollupable.title} does not have any comments. Skipping.`,
+      );
+      return;
+    }
+    setOutput("body", body ?? "");
+    notice(`Removed stale rollup from ${rollupableType} ${rollupable.title}`);
     return;
   }
 

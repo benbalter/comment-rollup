@@ -112,4 +112,87 @@ describe("run", () => {
     expect(output).toContain("body<<");
     expect(output).toContain("Updated body");
   });
+
+  test("removes a stale marker rollup when the last comment is deleted", async () => {
+    context.payload = { issue: { number: 3 } };
+    const body =
+      "Original\n\n<!-- comment-rollup:start -->\n<details><summary>Comment rollup</summary>\n\nStale rollup content\n\n</details>\n<!-- comment-rollup:end -->";
+
+    sandbox.route({
+      method: "GET",
+      url: issueUrl,
+      response: { status: 200, body: mockIssueData({ body }) },
+    });
+    sandbox.route({
+      method: "GET",
+      url: `begin:${issueUrl}/comments`,
+      response: { status: 200, body: [] },
+    });
+    sandbox.route({
+      method: "PATCH",
+      url: issueUrl,
+      response: { status: 200, body: { body: "Original" } },
+    });
+
+    await run();
+
+    expect(sandbox.callHistory.called(issueUrl, { method: "PATCH" })).toBe(
+      true,
+    );
+    const calls = sandbox.callHistory.calls(issueUrl, { method: "PATCH" });
+    const requestBody = calls[calls.length - 1].options?.body as string;
+    expect(JSON.parse(requestBody).body).toBe("Original");
+  });
+
+  test("removes a stale legacy rollup when the last comment is deleted", async () => {
+    context.payload = { issue: { number: 3 } };
+    const body =
+      "Original\n\n<details>\n<summary>Comment rollup</summary>\n\nStale rollup content\n\n</details>";
+
+    sandbox.route({
+      method: "GET",
+      url: issueUrl,
+      response: { status: 200, body: mockIssueData({ body }) },
+    });
+    sandbox.route({
+      method: "GET",
+      url: `begin:${issueUrl}/comments`,
+      response: { status: 200, body: [] },
+    });
+    sandbox.route({
+      method: "PATCH",
+      url: issueUrl,
+      response: { status: 200, body: { body: "Original" } },
+    });
+
+    await run();
+
+    expect(sandbox.callHistory.called(issueUrl, { method: "PATCH" })).toBe(
+      true,
+    );
+    const calls = sandbox.callHistory.calls(issueUrl, { method: "PATCH" });
+    const requestBody = calls[calls.length - 1].options?.body as string;
+    expect(JSON.parse(requestBody).body).toBe("Original");
+  });
+
+  test("does not write the body when there is no rollup to remove", async () => {
+    context.payload = { issue: { number: 3 } };
+
+    sandbox.route({
+      method: "GET",
+      url: issueUrl,
+      response: { status: 200, body: mockIssueData({ body: "Original" }) },
+    });
+    sandbox.route({
+      method: "GET",
+      url: `begin:${issueUrl}/comments`,
+      response: { status: 200, body: [] },
+    });
+
+    await run();
+
+    expect(sandbox.callHistory.called(issueUrl, { method: "PATCH" })).toBe(
+      false,
+    );
+  });
 });

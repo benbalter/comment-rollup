@@ -264315,6 +264315,40 @@ class Rollupable {
     async updateBody(_downloadUrl) {
         throw new Error("Not implemented");
     }
+    // Writes the given body back to the issue or discussion.
+    async writeBody(_body) {
+        throw new Error("Not implemented");
+    }
+    // Removes any existing rollup from the body and writes the body back.
+    // Returns undefined, writing nothing, when the body has no rollup.
+    async clearRollup() {
+        const body = this.bodyWithoutRollup();
+        if (body === undefined) {
+            return undefined;
+        }
+        return this.writeBody(body);
+    }
+    // Returns the body with any existing rollup removed, or undefined when the
+    // body has no rollup (either the marker form or the legacy <details> form),
+    // so callers can skip the write.
+    bodyWithoutRollup() {
+        const body = this.body ?? "";
+        const match = body.match(rollupRegex) ?? body.match(legacyRollupRegex);
+        if (match === null || match.index === undefined) {
+            return undefined;
+        }
+        // The rollup is always appended after the original body, so drop the
+        // block and the blank line that separated it from the body.
+        const before = body.slice(0, match.index).replace(/\s+$/, "");
+        const after = body.slice(match.index + match[0].length).replace(/^\s+/, "");
+        if (before === "") {
+            return after;
+        }
+        if (after === "") {
+            return before;
+        }
+        return `${before}\n\n${after}`;
+    }
     bodyWithRollup(downloadUrl) {
         if (this.body === undefined) {
             throw new Error("Rollupable body is undefined");
@@ -268285,9 +268319,12 @@ class Issue extends Rollupable {
         };
     }
     async updateBody(downloadUrl) {
+        return this.writeBody(this.bodyWithRollup(downloadUrl));
+    }
+    async writeBody(body) {
         const response = await octokit_getOctokit().rest.issues.update({
             ...this.octokitArgs,
-            body: this.bodyWithRollup(downloadUrl),
+            body,
         });
         return response.data.body;
     }
@@ -268392,9 +268429,12 @@ class Discussion extends Rollupable {
         }
     }
     async updateBody(downloadUrl) {
+        return this.writeBody(this.bodyWithRollup(downloadUrl));
+    }
+    async writeBody(body) {
         const response = await octokit_getOctokit().graphql(updateBodyMutation, {
             discussionId: this.id,
-            body: this.bodyWithRollup(downloadUrl),
+            body,
         });
         return response.updateDiscussion.discussion.body;
     }
@@ -268455,7 +268495,13 @@ async function run() {
     }
     await rollupable.getComments();
     if (rollupable.comments?.length === 0) {
-        (0,lib_core/* warning */.$e)(`${rollupableType} ${rollupable.title} does not have any comments. Skipping.`);
+        const body = await rollupable.clearRollup();
+        if (body === undefined) {
+            (0,lib_core/* warning */.$e)(`${rollupableType} ${rollupable.title} does not have any comments. Skipping.`);
+            return;
+        }
+        (0,lib_core/* setOutput */.uH)("body", body ?? "");
+        (0,lib_core/* notice */.lm)(`Removed stale rollup from ${rollupableType} ${rollupable.title}`);
         return;
     }
     let uploadedRollupUrl;
