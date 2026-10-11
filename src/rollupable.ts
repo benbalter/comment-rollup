@@ -67,6 +67,8 @@ export interface RollupableClass {
   getData: () => Promise<void>;
   getComments: () => Promise<void>;
   bodyWithRollup: (rollup: string) => string;
+  bodyWithoutRollup: () => string | undefined;
+  clearRollup: () => Promise<string | null | undefined>;
 }
 
 export abstract class Rollupable implements RollupableClass {
@@ -250,6 +252,43 @@ export abstract class Rollupable implements RollupableClass {
     _downloadUrl?: string,
   ): Promise<string | null | undefined> {
     throw new Error("Not implemented");
+  }
+
+  // Writes the given body back to the issue or discussion.
+  protected async writeBody(_body: string): Promise<string | null | undefined> {
+    throw new Error("Not implemented");
+  }
+
+  // Removes any existing rollup from the body and writes the body back.
+  // Returns undefined, writing nothing, when the body has no rollup.
+  public async clearRollup(): Promise<string | null | undefined> {
+    const body = this.bodyWithoutRollup();
+    if (body === undefined) {
+      return undefined;
+    }
+    return this.writeBody(body);
+  }
+
+  // Returns the body with any existing rollup removed, or undefined when the
+  // body has no rollup (either the marker form or the legacy <details> form),
+  // so callers can skip the write.
+  public bodyWithoutRollup(): string | undefined {
+    const body = this.body ?? "";
+    const match = body.match(rollupRegex) ?? body.match(legacyRollupRegex);
+    if (match === null || match.index === undefined) {
+      return undefined;
+    }
+    // The rollup is always appended after the original body, so drop the
+    // block and the blank line that separated it from the body.
+    const before = body.slice(0, match.index).replace(/\s+$/, "");
+    const after = body.slice(match.index + match[0].length).replace(/^\s+/, "");
+    if (before === "") {
+      return after;
+    }
+    if (after === "") {
+      return before;
+    }
+    return `${before}\n\n${after}`;
   }
 
   public bodyWithRollup(downloadUrl?: string): string {
