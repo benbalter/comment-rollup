@@ -7,6 +7,10 @@ on:
       - 'releases/*'
   workflow_dispatch:
 
+# Read-only by default; the live `test` job grants itself what it needs.
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest

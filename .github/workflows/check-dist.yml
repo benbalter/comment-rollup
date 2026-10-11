@@ -16,6 +16,10 @@ on:
       - '**.md'
   workflow_dispatch:
 
+# Builds and diffs dist/; needs no write access.
+permissions:
+  contents: read
+
 jobs:
   check-dist:
     runs-on: ubuntu-latest

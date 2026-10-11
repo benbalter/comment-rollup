@@ -4,6 +4,11 @@ on:
 
 name: Rollup weekly comments
 
+# The action rewrites the issue or discussion body with the rollup.
+permissions:
+  issues: write
+  discussions: write
+
 jobs:
   comment_rollup:
     runs-on: ubuntu-latest
