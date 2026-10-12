@@ -36,6 +36,15 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v7
+      # dist/ isn't committed, so build the action before running it.
+      # --ignore-scripts: this job holds a write token, and the build doesn't need install scripts.
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: 'npm'
+      - run: npm ci --ignore-scripts
+      - run: npm run package
       - uses: ./
         with:
           number: 3
