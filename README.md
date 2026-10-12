@@ -55,3 +55,7 @@ jobs:
           group_by_heading: true # Optional, groups comments by heading (BETA)
 ```
 
+
+## Releasing
+
+`dist/` isn't committed to `main`; it's built only for releases. To cut one, run `script/release vX.Y.Z` from an up-to-date, clean `main`. It builds `dist/`, commits it on top of `main` without moving `main`, tags that commit `vX.Y.Z`, moves the floating major tag (e.g. `v2`) to it, and prints the `git push` and `gh release create` commands to run once you've checked the result.
