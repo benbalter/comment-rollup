@@ -56,7 +56,7 @@
     "typescript-eslint": "^8.59.1"
   },
   "overrides": {
-    "xmlbuilder2": "^4.0.0"
+    "xmlbuilder2": "$xmlbuilder2"
   },
   "type": "module"
 }
